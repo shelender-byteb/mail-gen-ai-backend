@@ -1,0 +1,15 @@
+/venv
+/.venv
+/.idea
+**/__pycache__/
+.DS_Store
+/fastapi.db
+/.env
+/alembic/versions/*
+/appendonlydir
+/dump.rdb
+/temp-*
+/virenv
+/test.db
+app/main_test.py
+/mail-gen-ai.tar
