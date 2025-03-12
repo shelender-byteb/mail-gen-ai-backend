@@ -1,6 +1,8 @@
 import json, uuid
 import time
 import logging
+from typing import Optional
+
 from sqlalchemy.future import select
 from fastapi import HTTPException,status, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -35,68 +37,81 @@ vectorstore = PineconeVectorStore(
 
 llm = ChatOpenAI(
     model_name='gpt-4o',
-    temperature=0.7
+    temperature=0.5
 )
 
 
-# Base your implementation on these examples:
-# {examples}
 
-
-# PROMPT_TEMPLATE = """
-# You are an expert web developer specializing in creating splash pages. 
-# Generate a complete HTML/CSS code based on the user's description and selected style.
-
-# Style type: {style_type}
-# User description: {user_input}
-
-
-# Guidelines:
-# 1. Include ALL CSS in <style> tags
-# 2. Use responsive design
-# 3. Add subtle animations
-# 4. Ensure color scheme matches the style type
-# 5. Include a main headline, subheading, and CTA button
-# 6. Make it a complete standalone HTML file
-
-# """
-
-async def generate_splash_page(query: str, style_type: str) -> str:
+async def generate_splash_page(
+    query: str, 
+    style_type: str, 
+    operation: str = "start_over", 
+    previous_html: Optional[str] = None,
+    button_url: Optional[str] = ""
+) -> str:
     """Generate HTML code for a splash page using RAG and LLMs"""
     try:
-
-        print(f"Query is {query} and style type is {style_type}")
-
-        # retriever = vectorstore.as_retriever(
-        #     search_kwargs={
-        #         "k": 3,
-        #         "filter": {"style": style_type}
-        #     }
-        # )
-
-        # docs = await retriever.ainvoke(query)
-        # print(f"Docs retrived from retriever are: {docs}")
-        # examples = "\n\n".join([doc.page_content for doc in docs])
-        # print(f"Formatted docs from retriever are: {docs}")
-
-        # prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+        print(f"Query is {query}, style type is {style_type}, operation is {operation}")
+        
+        # Add button_url and operation parameters to the invoke
         chain = prompt | llm
 
         response = await chain.ainvoke({
             "style_type": style_type,
             "user_input": query,
-            # "examples": examples
+            "operation": operation,
+            "previous_html": previous_html or "",
+            "button_url": button_url or "",
         })
-
+        
         print(f"\n\nResponse from chain is {response}\n")
         return response.content
-
+    
     except Exception as e:
         print(f"Generation failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate splash page"
         )
+    
+
+
+# async def generate_splash_page(query: str, style_type: str) -> str:
+#     """Generate HTML code for a splash page using RAG and LLMs"""
+#     try:
+
+#         print(f"Query is {query} and style type is {style_type}")
+
+#         # retriever = vectorstore.as_retriever(
+#         #     search_kwargs={
+#         #         "k": 3,
+#         #         "filter": {"style": style_type}
+#         #     }
+#         # )
+
+#         # docs = await retriever.ainvoke(query)
+#         # print(f"Docs retrived from retriever are: {docs}")
+#         # examples = "\n\n".join([doc.page_content for doc in docs])
+#         # print(f"Formatted docs from retriever are: {docs}")
+
+#         # prompt = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+#         chain = prompt | llm
+
+#         response = await chain.ainvoke({
+#             "style_type": style_type,
+#             "user_input": query,
+#             # "examples": examples
+#         })
+
+#         print(f"\n\nResponse from chain is {response}\n")
+#         return response.content
+
+#     except Exception as e:
+#         print(f"Generation failed: {str(e)}")
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail="Failed to generate splash page"
+#         )
 
 
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from app.routes import user_chat
+from app.routes import user_chat, email_routes
 
 origins = [
     "http://192.168.18.10:5173",
@@ -24,6 +24,8 @@ def create_application():
         return {"routes": [{"path": route.path, "name": route.name} for route in application.routes]}
     
     application.include_router(user_chat.router)
+    application.include_router(email_routes.router)
+
     return application
 
 

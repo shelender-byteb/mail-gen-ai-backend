@@ -6,6 +6,22 @@ class UserChat(BaseModel):
     question: str
 
 
+
 class GenerationRequest(BaseModel):
     query: str
     style_type: str
+    operation: str = "start_over"  # "start_over" or "update"
+    previous_html: Optional[str] = None
+    button_url: Optional[str] = ""
+
+
+class EmailGenerationRequest(BaseModel):
+    prompt: str
+    website_url: str
+    previous_email: Optional[str] = None
+    operation: str = "generate"  # "generate" or "refine"
+    
+    
+# class GenerationRequest(BaseModel):
+#     query: str
+#     style_type: str

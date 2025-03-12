@@ -12,7 +12,7 @@ COPY ./requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Install Playwright browsers
-# RUN playwright install --with-deps
+RUN playwright install --with-deps
 
 COPY . .
 

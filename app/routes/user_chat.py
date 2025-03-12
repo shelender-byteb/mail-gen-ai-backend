@@ -25,36 +25,91 @@ router = APIRouter(
 async def generate_html_page(
     data: GenerationRequest,
     background_tasks: BackgroundTasks,
-    # session: Session = Depends(database_config.get_async_db)
 ):
     """
     Generate a splash page HTML based on description and style type.
     """
-
     print(f"Route hit...")
 
     query = data.query
     style_type = data.style_type
+    operation = data.operation
+    previous_html = data.previous_html
+    button_url = data.button_url
 
     if style_type not in ["professional", "casual"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid style type. Use 'professional' or 'casual'"
         )
+    
+    if operation not in ["start_over", "update"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid operation. Use 'start_over' or 'update'"
+        )
+
+    if operation == "update" and not previous_html:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Previous HTML required for update operation"
+        )
 
     try:
-        html_content = await user_chat.generate_splash_page(query, style_type)
+        html_content = await user_chat.generate_splash_page(
+            query, 
+            style_type, 
+            operation, 
+            previous_html,
+            button_url
+        )
         return JSONResponse(
             content={"html": html_content},
             headers={"Content-Type": "application/json; charset=utf-8"}
         )
-
     except Exception as e:
         print(f"API Error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+
+
+
+# @router.post("/splash-generate", status_code=status.HTTP_200_OK)
+# async def generate_html_page(
+#     data: GenerationRequest,
+#     background_tasks: BackgroundTasks,
+#     # session: Session = Depends(database_config.get_async_db)
+# ):
+#     """
+#     Generate a splash page HTML based on description and style type.
+#     """
+
+#     print(f"Route hit...")
+
+#     query = data.query
+#     style_type = data.style_type
+
+#     if style_type not in ["professional", "casual"]:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Invalid style type. Use 'professional' or 'casual'"
+#         )
+
+#     try:
+#         html_content = await user_chat.generate_splash_page(query, style_type)
+#         return JSONResponse(
+#             content={"html": html_content},
+#             headers={"Content-Type": "application/json; charset=utf-8"}
+#         )
+
+#     except Exception as e:
+#         print(f"API Error: {str(e)}")
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail="Internal server error"
+#         )
 
 
 
