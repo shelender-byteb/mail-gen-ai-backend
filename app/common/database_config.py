@@ -58,3 +58,10 @@ async def get_async_db():
             yield session
         finally:
             await session.close()
+
+
+# Import all models here
+from app.models.splash_page import SplashPage
+
+# Create tables synchronously
+Base.metadata.create_all(bind=ENGINE)

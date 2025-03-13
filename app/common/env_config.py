@@ -11,6 +11,13 @@ load_dotenv(override=True)
 
 class Settings(BaseSettings):
 
+    POSTGRES_HOST: str
+    POSTGRES_PORT: str
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    DATABASE_URI_ASYNC: str
+
 
     EMBEDDINGS_MODEL_NAME: str
     OPENAI_API_KEY: str
