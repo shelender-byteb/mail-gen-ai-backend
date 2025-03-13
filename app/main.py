@@ -1,14 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from app.routes import user_chat, email_routes
+from app.routes import splash_page, email_routes
 
 origins = [
-    "http://192.168.18.10:5173",
-    "http://localhost:5173",
-    "http://pdc-frontend-chatbot.s3-website-us-east-1.amazonaws.com",
-    "http://localhost:4173",
-    "http://pdc-frontend-admin.s3-website-us-east-1.amazonaws.com"
+    "http://localhost:3000",
+    "http://localhost:3001",
+    # "http://192.168.18.10:5173",
+    # "http://localhost:5173",
+    # "http://pdc-frontend-chatbot.s3-website-us-east-1.amazonaws.com",
+    # "http://localhost:4173",
+    # "http://pdc-frontend-admin.s3-website-us-east-1.amazonaws.com"
     
         # Adjust the port if your React app runs on a different port
     # settings.FRONTEND_HOST,  # The default port for FastAPI, if you want to allow it
@@ -23,7 +25,7 @@ def create_application():
     async def debug():
         return {"routes": [{"path": route.path, "name": route.name} for route in application.routes]}
     
-    application.include_router(user_chat.router)
+    application.include_router(splash_page.router)
     application.include_router(email_routes.router)
 
     return application

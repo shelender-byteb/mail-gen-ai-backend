@@ -1,7 +1,7 @@
 # app/routes/email_routes.py
 from fastapi import APIRouter, Depends, status, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
-from app.schemas.request.user_chat import EmailGenerationRequest
+from app.schemas.request.splash_page import EmailGenerationRequest
 from app.services.email_generator import generate_email_advertisement
 import logging
 
