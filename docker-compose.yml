@@ -4,11 +4,16 @@ services:
   app:
     build: .
     ports:
-      - "8000:80"
+      - "8080:80"
     environment:
       - POSTGRES_HOST=db
     depends_on:
       - db
+    volumes:
+      - .:/app  # Mount local directory to the container
+    # command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload", "--reload-dir", "/app"]
+
 
   db:
     image: postgres:15
@@ -17,7 +22,7 @@ services:
       POSTGRES_PASSWORD: 1471
       POSTGRES_DB: mailgen-db
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 

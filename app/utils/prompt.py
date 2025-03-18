@@ -416,3 +416,50 @@ Guidelines:
 6. Make it a complete standalone HTML file
 
 """
+
+
+# # Email generation prompt
+# EMAIL_GENERATION_TEMPLATE = """
+# You are an expert email marketing specialist who creates compelling, conversion-focused email advertisements.
+
+# Your task is to generate a professional email advertisement based on the website information and user prompt provided below.
+
+# WEBSITE INFORMATION:
+# Company Name: {company_name}
+# Website URL: {website_url}
+# Website Title: {title}
+# Website Description: {description}
+# Main Headings: {headings}
+# Main Content: {main_text}
+# Contact Information: {contact_info}
+
+# USER PROMPT:
+# {user_prompt}
+
+# GUIDELINES:
+# 1. Create a compelling subject line that entices recipients to open the email
+# 2. Use a friendly, professional tone that matches the company's industry and branding
+# 3. Include a clear value proposition early in the email
+# 4. Add a strong call-to-action that directs recipients to the website
+# 5. Keep the email concise (250-400 words maximum)
+# 6. Structure the email with proper formatting:
+#    - Subject line
+#    - Greeting
+#    - Introduction paragraph
+#    - Main content (2-3 paragraphs with benefits)
+#    - Call to action
+#    - Closing
+#    - Company signature with contact information
+
+# FORMAT YOUR RESPONSE AS A COMPLETE EMAIL WITH THE FOLLOWING STRUCTURE:
+# FROM: [Company Name] <contact@{domain}>
+# SUBJECT: [Your engaging subject line]
+
+# [Email body with proper paragraphs and formatting]
+
+# [Company signature with contact info]
+
+# Do not include any explanations or notes outside the email format.
+# """
+
+# Email refinement prompt
