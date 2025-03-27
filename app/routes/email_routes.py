@@ -28,6 +28,8 @@ async def generate_email(
             operation=data.operation,
             previous_email=data.previous_email
         )
+
+        logging.info(f"Email generation successful:\n{email_content}\n\n")
         
         return JSONResponse(
             content={"email": email_content},

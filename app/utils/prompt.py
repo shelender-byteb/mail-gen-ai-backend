@@ -391,7 +391,7 @@ prompt = ChatPromptTemplate.from_messages([
         Operation: {operation}
         Button URL: {button_url}
         
-        {previous_html}
+        Previous HTML (if the Operation is update): {previous_html}
         """)
         ])
 
@@ -463,3 +463,467 @@ Guidelines:
 # """
 
 # Email refinement prompt
+
+
+
+
+EMAIL_GENERATION_TEMPLATE = """
+    You are an expert email marketing specialist who creates compelling, conversion-focused email advertisements.
+
+    Your task is to generate a professional email advertisement based on the website content and user prompt provided below.
+
+    WEBSITE INFORMATION:
+    Website URL: {website_url}
+    Website Content: 
+    {website_content}
+
+    USER PROMPT:
+    {user_prompt}
+
+    GUIDELINES:
+    1. Create a compelling subject line that entices recipients to open the email
+    2. Use a friendly, professional tone that matches the company's industry and branding
+    3. Include a clear value proposition early in the email
+    4. Be highly creative with the email structure - don't follow a standard formula but ALWAYS GIVE A SUBJECT LINE IN THE BEGINNING
+    5. Use plenty of emojis throughout the email to make it eye-catching and engaging ✨🚀💯
+    6. Experiment with different formatting styles including bullet points, bold text, and varied paragraph lengths
+    7. Create a visually dynamic email that stands out in an inbox
+    8. Make the tone exciting and energetic - this is marketing that needs to grab attention immediately
+    9. Add a strong call-to-action that directs recipients to the website
+    10. Keep the email concise (250-400 words maximum)
+    11. DO NOT include any headers, footers, or salutations (no "Dear" or "Hello" openings)
+    12. Include provided website URL {website_url} as contact details in the end in the section of response [Contact info with website URL]
+    13. Use only the provided website URL {website_url} in the email as the primary link for all call-to-actions, not any links from the scraped content
+    14. ONLY GIVE RESPONSE IN MARKDOWN FORMAT. NEVER GIVE RESPONSE IN HTML FORMAT.
+    15. For the contact information at the end, simply write "Visit us:" followed by the website URL {website_url}. Do not include the text "[Contact info with website URL]" in your response.
+
+    FORMAT YOUR RESPONSE:
+    SUBJECT: [Your engaging subject line with emojis]
+
+    [Creative email body with varied formatting, multiple emojis, and eye-catching elements]
+
+    [Contact info with website URL]
+
+    Email 1:
+    Hello There,
+    We live in historic times worldwide. Make 2025 historic for you, as you have the power to do so!
+    This one has a special Promo Code - Gamma40
+    You need to sign up under me to get the max for that
+    https://superhotopp.com/lunerhive
+    A New program has opened that you'll love, called Super Hot Opp (ortunity)
+    The Admins are giving away their signups to members, into the 1000's of them
+    Make residual and lump sums in cash - up to 98 dollars a lump!
+    Even if the signup was sent to you by the admins...
+    Is that free money? YES Yes yes...
+    ► Get your programs out there with SOME STYLE
+    Also get 2 free hours of advertising when you join today
+    Also get 12 special effects on your ads - never seen before + 1 of a kind effects!
+    Super simple, just add in your ads.
+    Show your smart ad rotator and get even more time on your ads - EASY and CLEAR to do.
+    And if you want more???
+    The upgrades are only 3.99← Value packed and super low!
+    Get the Super Hot Opp Here
+
+    Email 2:
+    Hello My Fellow Marketer,
+    Have you ever wished for a Money Tree
+    where you could just shake it and money
+    would fall down?<contact@domain>
+    I found one and you can have one too!
+    This is the cheapest, simplest and fastest
+    way I have ever seen to get money. PERIOD.
+    Take a look at my Money Tree and Get Ya One!
+    - Richard Daigle
+
+    Email 3:
+    "USE OUR DONE 4 YOU"..."SUPER POWERFUL LANDING PAGES TO PROMOTE YOUR GREAT BUSINESS PLUS GET PAID"$$$..
+    Struggling To Stand Out?..Are Your Landing Pages Being Ignored?''
+    We Have The Low Cost Answer...
+    YES Use Our Super Powerful Landing Pages To Promote Your Great Programs!!!..
+    One Time Low Cost USE Them FOREVER.!!!...
+    JOIN NOW CLICK HERE... https://tinyurl.com/ytw3a6kb
+    PAY With PayPal 1707nashville@gmail.com
+    CashApp $robert476
+    Zelle (929)-531 2834
+    JOIN NOW START GETTING PAID SUPER FAST.$$$....
+    YES GET CASH-FLOW NOW.!!!..
+    ALL THE BEST...
+
+    Email 4:
+    herculist Do The Math! $900 A Day-Keep 100%-No Monthly Fees
+    Say goodbye to rush hour traffic, the 9-5 grind, trading time for money or not making enough money online! Our proven and easy to follow program makes earning $900/day, with zero monthly fees, more than possible. Free Blueprint- Click Here
+    This lifestyle changing opportunity supported by a 50k plus community of like-minded, work from home members, makes it easy to succeed from anywhere WIFI is available. https://www.make900dailyonlinefast.com/ready
+    WORLDWIDE CASH COWS
+
+    Email 5:
+    ★ (You Found it) - The One-Page Funnel 3.0
+    Easy Passive Income with DFY funnel
+    100% Done-For-You funnel – No setup needed!
+    Automated sales system – Closes sales for you.
+    Built-in follow-up – Promotes multiple offers on autopilot!
+    No auto-responder needed.
+    Every lead is hard coded to YOU for life.
+    Instant Traffic Solution – Just plug & play!
+    Click Below To Get Access To this amazing program.
+    Also, get Access to these Amazing Bonuses:
+    1. Facebook group to learn Social media strategies.
+    2. DM Scripts, MRR products and Free Premium E-books.
+    3. Free Traffic Rotator with up to 5000 clicks from Safelists.
+    https://itsylinx.com/NOTECHSKILLS
+    You get all this for $7.
+    To Your Success,
+    Richard Moore
+
+    Do not include any explanations or notes outside the email format.
+"""
+
+
+EMAIL_REFINEMENT_TEMPLATE = """
+You are an expert email marketing specialist who helps refine and improve email advertisements.
+
+Your task is to refine the existing email advertisement based on the user's feedback.
+
+ORIGINAL EMAIL:
+{previous_email}
+
+USER FEEDBACK FOR REFINEMENT:
+{user_prompt}
+
+
+GUIDELINES:
+1. Maintain the original structure of the email
+2. Make only the changes requested by the user
+3. Ensure the subject line remains compelling and includes emojis
+4. Keep the overall tone consistent with the brand while maintaining an exciting, energetic style
+5. Maintain a clear call-to-action that links to the provided website URL
+6. Ensure the email remains concise (250-400 words maximum)
+7. ONLY GIVE RESPONSE IN MARKDOWN FORMAT. NEVER GIVE RESPONSE IN HTML FORMAT.
+8. Preserve or enhance the creative formatting of the original email
+9. Maintain or add more emojis to keep the email eye-catching and engaging
+10. DO NOT add salutations (no "Dear" or "Hello" openings) if they weren't in the original
+
+
+
+FORMAT YOUR RESPONSE:
+SUBJECT: [Updated subject line if needed]
+
+[Refined email body]
+
+[Contact info with website URL]
+
+Do not include any explanations or notes outside the email format.
+"""
+
+
+
+
+
+
+
+
+##########################################################
+
+
+
+"""
+EXAMPLES OF GOOD STYLING & FORMAT:
+Here are three examples to guide you on structure only. DO NOT copy these exact designs or content. \
+Instead, be creative and develop unique styling that matches the company's branding and purpose. These are just to show potential layout approaches:
+
+Example 1:
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make 2025 Historic For You!</title>
+    <style>
+        body {{
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #F9F9F9;
+        }}
+        .container {{
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }}
+        .header {{
+            text-align: center;
+            margin-bottom: 25px;
+            color: #E63946;
+        }}
+        .highlight {{
+            background-color: #FFEDCC;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #FFC107;
+        }}
+        .promo-code {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #E63946;
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #F8F9FA;
+            border-radius: 5px;
+            border: 2px dashed #E63946;
+        }}
+        .features {{
+            margin: 20px 0;
+        }}
+        .feature {{
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }}
+        .feature:before {{
+            content: "►";
+            position: absolute;
+            left: 0;
+            color: #E63946;
+        }}
+        .cta {{
+            text-align: center;
+            margin: 30px 0 20px;
+        }}
+        .button {{
+            display: inline-block;
+            background-color: #E63946;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }}
+        .button:hover {{
+            background-color: #D62B39;
+        }}
+        .emoji {{
+            font-size: 1.2em;
+        }}
+        .footer {{
+            margin-top: 30px;
+            font-size: 14px;
+            text-align: center;
+            color: #777;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Email content -->
+    </div>
+</body>
+</html>
+```
+
+Example 2:
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Hot Opportunity - Make 2025 Historic!</title>
+    <style>
+        body {{
+            font-family: 'Trebuchet MS', sans-serif;
+            line-height: 1.6;
+            color: #2E2E2E;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #F0F2F5;
+        }}
+        .container {{
+            background: linear-gradient(135deg, #6A11CB 0%, #2575FC 100%);
+            border-radius: 15px;
+            padding: 5px;
+        }}
+        .content {{
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+        }}
+        .header {{
+            text-align: center;
+            margin-bottom: 25px;
+        }}
+        .header h1 {{
+            color: #6A11CB;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }}
+        .header h2 {{
+            color: #2575FC;
+            font-size: 24px;
+            font-weight: 500;
+            margin-top: 0;
+        }}
+        .promo-box {{
+            background: linear-gradient(45deg, #FF9A9E 0%, #FAD0C4 99%, #FAD0C4 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+            text-align: center;
+        }}
+        .promo-code {{
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #6A11CB;
+            margin: 15px 0;
+            padding: 10px 15px;
+            background-color: white;
+            display: inline-block;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }}
+        .features-container {{
+            background-color: #F8F9FA;
+            border-radius: 10px;
+            padding: 20px 30px;
+            margin: 25px 0;
+        }}
+        .feature {{
+            position: relative;
+            padding: 8px 0 8px 35px;
+            margin: 10px 0;
+        }}
+        .feature:before {{
+            content: "✨";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }}
+        .emoji {{
+            font-size: 1.2em;
+            vertical-align: middle;
+        }}
+        .price {{
+            font-size: 24px;
+            font-weight: bold;
+            color: #2575FC;
+            margin: 20px 0;
+            text-align: center;
+        }}
+        .cta {{
+            text-align: center;
+            margin: 30px 0;
+        }}
+        .button {{
+            display: inline-block;
+            background: linear-gradient(to right, #6A11CB 0%, #2575FC 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+        }}
+        .button:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(37, 117, 252, 0.5);
+        }}
+        a {{
+            color: #2575FC;
+            text-decoration: none;
+            border-bottom: 1px dotted;
+        }}
+        .highlight {{
+            background: linear-gradient(120deg, rgba(255,194,102,0.2) 0%, rgba(255,194,102,0.2) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 85%;
+            padding: 0 5px;
+        }}
+        .footer {{
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <!-- Email content -->
+        </div>
+    </div>
+</body>
+</html>
+```
+"""
+
+
+
+
+
+
+
+
+
+
+
+# DO NOT copy exact styles, colors, or layout from the from the examples.
+
+# FORMAT YOUR HTML RESPONSE:
+# <!DOCTYPE html>
+# <html lang="en">
+# <head>
+#     <meta charset="UTF-8">
+#     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#     <title>[Your Email Subject Line]</title>
+#     <style>
+#         /* Include your complete CSS styling here */
+#         body {{
+#             font-family: 'Arial', sans-serif;
+#             line-height: 1.6;
+#             color: #333;
+#             max-width: 600px;
+#             margin: 0 auto;
+#             padding: 20px;
+#             background-color: #F9F9F9;
+#         }}
+#         /* Add more styles as needed */
+#     </style>
+# </head>
+# <body>
+#     <div class="container">
+#         <!-- Your email content here -->
+#         <div class="header">
+#             <h1>[Your main headline]</h1>
+#         </div>
+        
+#         <!-- Main content -->
+        
+#         <!-- Call to action -->
+#         <div class="cta">
+#             <a href="{website_url}" class="button">Your CTA Text</a>
+#         </div>
+        
+#         <!-- Footer -->
+#         <div class="footer">
+#             <p>© 2025 [Company Name]. All rights reserved.</p>
+#         </div>
+#     </div>
+# </body>
+# </html>

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from app.routes import splash_page, email_routes
+from app.routes import splash_page, email_routes, template_routes, model_routes, banner_routes, autocomplete_routes
 
 origins = [
     "http://localhost:3000",
@@ -27,6 +27,12 @@ def create_application():
     
     application.include_router(splash_page.router)
     application.include_router(email_routes.router)
+    application.include_router(template_routes.router)
+    application.include_router(model_routes.router)
+    application.include_router(banner_routes.router)
+    application.include_router(autocomplete_routes.router)
+
+
 
     return application
 

@@ -1,0 +1,22 @@
+{
+    "templates": {
+        "email_generation": "new prompt",
+        "email_refinement": "Existing email refinement template content...",
+        "splash_page": "Existing splash page prompt content...",
+        "banner": "Existing banner template content..."
+    },
+    "models": {
+        "email": {
+            "model_name": "gpt-4o-mini",
+            "temperature": 0.1
+        },
+        "splash_page": {
+            "model_name": "gpt-4o",
+            "temperature": 0.5
+        },
+        "banner": {
+            "model_name": "gpt-4o",
+            "temperature": 0.6
+        }
+    }
+}
