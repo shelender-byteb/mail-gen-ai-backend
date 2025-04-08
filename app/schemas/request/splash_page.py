@@ -1,5 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field, validator
+from enum import Enum
+
 
 class UserChat(BaseModel):
     id: int
@@ -24,11 +26,21 @@ class GenerationRequest(BaseModel):
         return v
 
 
+class Operation(str, Enum):
+    EMAIL_GENERATION = "generate"
+    EMAIL_REFINEMENT = "refine"
+
+class EmailStyle(str, Enum):
+    PROFESSIONAL_EMAIL = "professional"
+    SALESY_EMAIL = "casual"
+
+
 class EmailGenerationRequest(BaseModel):
     prompt: str
     website_url: str
     previous_email: Optional[str] = None
-    operation: str = "generate"  # "generate" or "refine"
+    operation: Operation
+    email_style: EmailStyle
     
     
 # class GenerationRequest(BaseModel):

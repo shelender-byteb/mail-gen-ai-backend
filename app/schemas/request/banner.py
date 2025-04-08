@@ -9,6 +9,8 @@ class Operation(str, Enum):
 
 class BannerGenerationRequest(BaseModel):
     user_prompt: str
+    width: int
+    height: int = 500
     operation: Operation
     website_url: Optional[str] = None
     previous_banner: Optional[str] = None

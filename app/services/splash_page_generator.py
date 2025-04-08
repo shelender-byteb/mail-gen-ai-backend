@@ -20,7 +20,8 @@ from pinecone import Pinecone
 from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAIEmbeddings
 
-from app.utils.prompt import PROMPT_TEMPLATE, prompt
+from app.utils.prompt import prompt
+from app.utils.website_scraper import scrape_website
 from app.common.env_config import get_envs_setting
 
 
@@ -59,12 +60,23 @@ async def generate_splash_page(
         # Add button_url and operation parameters to the invoke
         chain = prompt | llm
 
+        website_data = await scrape_website(button_url)
+                
+        if 'error' in website_data:
+            logging.error(f"Website scraping error: {website_data['error']}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to scrape website: {website_data['error']}"
+            )
+
         response = await chain.ainvoke({
             "style_type": style_type,
             "user_input": query,
             "operation": operation,
             "previous_html": previous_html or "",
             "button_url": button_url or "",
+            "website_url": button_url or "",
+            "website_content": website_data
         })
         
         print(f"\n\nResponse from chain is {response}\n")

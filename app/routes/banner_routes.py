@@ -20,6 +20,8 @@ async def generate_banner_endpoint(data: BannerGenerationRequest):
     try:
         banner_html = await generate_banner(
             prompt=data.user_prompt,
+            height=data.height,
+            width=data.width,
             operation=data.operation,
             website_url=data.website_url,
             previous_banner=data.previous_banner

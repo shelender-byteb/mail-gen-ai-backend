@@ -30,9 +30,12 @@ Website Content:
 USER PROMPT:
 {user_prompt}
 
+Height Specification: {height}
+Width Specification: {width}
+
 GUIDELINES:
 1. Create a visually striking banner that captures attention immediately
-2. Design in a box/rectangular format with fixed width and variable height based on content
+2. Design in a box/rectangular format with width and height EXACTLY as specified in the user input parameters.
 3. Include a bold, compelling headline that communicates value
 4. Feature 3-5 key value propositions or benefits
 5. Use a color scheme that attracts attention
@@ -41,7 +44,8 @@ GUIDELINES:
 8. Keep text concise and focused on benefits
 9. Use only the provided website URL {website_url} for all links
 10. IMPORTANT: Deliver COMPLETE HTML with CSS styling
-11. CRITICAL: Design for visual impact with animations, gradients, and creative styling
+11. CRITICAL: Set background: transparent for html and body elements - do NOT apply any styles to parent elements outside the banner container
+
 12. CRITICAL: Ensure all links use target="_blank" to open in a new page
 13. CRITICAL: Do not include any footer sections, copyright notices, or company addresses
 14. Design for maximum visual appeal with:
@@ -54,6 +58,14 @@ GUIDELINES:
    - A bold headline that grabs attention
    - A punch line that explains the value
    - A clear CTA (Call to Action) that links to the provided website URL
+
+16. CRITICAL: Ensure that all animations, backgrounds, and decorative effects remain strictly within the confines of the banner container; under no circumstances should any element extend beyond the banner's dimensions or fill the entire screen.
+17. The banner's height should be EXACTLY as specified in the user input (look for height specifications in the user prompt)
+18. Use 'overflow: hidden' on both body and container elements to prevent any content from spilling outside the banner dimensions
+19. Position the banner container relative to itself, not absolute or fixed positioning, to ensure it doesn't interact with elements outside itself
+
+
+
 
 EXAMPLE BANNER FORMAT:
 <!DOCTYPE html>
@@ -85,7 +97,7 @@ EXAMPLE BANNER FORMAT:
 
         /* Background Elements */
         .cosmic-element {{
-            position: absolute;
+            position: relative;
             width: 120px;
             height: 120px;
             background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 20%, transparent 70%);
@@ -199,9 +211,12 @@ ORIGINAL BANNER:
 USER FEEDBACK FOR REFINEMENT:
 {user_prompt}
 
+ORIGINAL WIDTH SPECIFICATION: {width}
+ORIGINAL HEIGHT SPECIFICATION: {height}
+
 GUIDELINES:
 1. Maintain the original structure and visual appeal of the banner
-2. Make only the changes requested by the user
+2. Make only the changes requested by the user while maintaining exact width and height specifications
 3. Ensure the headline remains compelling and attention-grabbing
 4. Maintain a clear call-to-action that links to the provided website URL
 5. Ensure the banner remains visually striking and conversion-focused
@@ -210,34 +225,40 @@ GUIDELINES:
 8. DO NOT include any footer sections, copyright notices, or company addresses
 9. Ensure all clickable elements direct to the website URL with target="_blank"
 10. The refined banner should be self-contained and ready to embed anywhere
+11. CRITICAL: Ensure body and html elements have background: transparent with no decorative styles
+
 
 THESE WERE THE ORIGINAL GUIDELINES FOR THE PREVIOUS BANNER (FOR REFERENCE):
 1. Create a visually striking banner that captures attention immediately
-2. Design in a box/rectangular format with fixed width and variable height based on content
+2. Design in a box/rectangular format with width and height EXACTLY as specified in the user input parameters.
 3. Include a bold, compelling headline that communicates value
 4. Feature 3-5 key value propositions or benefits
 5. Use a color scheme that attracts attention
 6. Incorporate strategic use of emojis or icons to enhance visual appeal
 7. Include one strong call-to-action button linked to the website URL
-8. Ensure the banner is responsive and displays well on different devices
-9. Keep text concise and focused on benefits
-10. Use only the provided website URL for all links
-11. CRITICAL: Maintain the three-part structure: Headline, Punch line, and CTA
-12. CRITICAL: Design for visual impact with animations, gradients, and creative styling
-13. CRITICAL: Ensure all links use target="_blank" to open in a new page
-14. CRITICAL: Do not include any footer sections, copyright notices, or company addresses
-15. Design for maximum visual appeal with:
+8. Keep text concise and focused on benefits
+9. Use only the provided website URL for all links
+10. IMPORTANT: Deliver COMPLETE HTML with CSS styling
+11. CRITICAL: Set background: transparent for html and body elements - do NOT apply any styles to parent elements outside the banner container
+
+12. CRITICAL: Ensure all links use target="_blank" to open in a new page
+13. CRITICAL: Do not include any footer sections, copyright notices, or company addresses
+14. Design for maximum visual appeal with:
    - Attention-grabbing animations (pulse, scale, orbit, etc.)
    - Creative background effects and gradients
    - Dashed or styled borders
    - Text shadows and glow effects for emphasis
    - Three key components: Headline at top, Punch line in middle, CTA at bottom
-16. CRITICAL: Structure the banner with these exact components:
+15. CRITICAL: Structure the banner with these components:
    - A bold headline that grabs attention
    - A punch line that explains the value
    - A clear CTA (Call to Action) that links to the provided website URL
 
-
+16. CRITICAL: Ensure that all animations, backgrounds, and decorative effects remain strictly within the confines of the banner container; under no circumstances should any element extend beyond the banner's dimensions or fill the entire screen.
+17. The banner's height should be EXACTLY as specified in the user input (look for height specifications in the user prompt)
+18. Use 'overflow: hidden' on both body and container elements to prevent any content from spilling outside the banner dimensions
+19. Position the banner container relative to itself, not absolute or fixed positioning, to ensure it doesn't interact with elements outside itself
+20. Arrange all text elements (headline, punch line, and CTA) using a flex layout with even vertical spacing (e.g., using `justify-content: space-around` or `space-between`) so that they are balanced across the banner, regardless of the specified height and width.
 
 Do not include any explanations or notes outside the HTML format. Return only the complete HTML code.
 """
@@ -246,6 +267,8 @@ Do not include any explanations or notes outside the HTML format. Return only th
 
 async def generate_banner(
     prompt: str,
+    height: int,
+    width: int,
     operation: str = "start_over",
     website_url: str = None,
     previous_banner: str = None
@@ -255,7 +278,7 @@ async def generate_banner(
    
     """
     try:
-        logging.info(f"Banner generation request - Operation: {operation}")
+        logging.info(f"Banner generation request - Operation: {operation}. Requested height is {height}")
         
         if operation == "update" and previous_banner:
             print(f"Operation is refine so updating the existing banner {previous_banner}")
@@ -264,6 +287,8 @@ async def generate_banner(
             
             response = await chain.ainvoke({
                 "user_prompt": prompt,
+                "height": height,
+                "width": width,
                 "previous_banner": previous_banner
             })
 
@@ -290,6 +315,8 @@ async def generate_banner(
         # Also update in the generate_email_advertisement function:
         response = await chain.ainvoke({
             "user_prompt": prompt,
+            "height": height,
+            "width": width,
             "website_url": website_url,
             "website_content": website_data.get('content', '')
         })

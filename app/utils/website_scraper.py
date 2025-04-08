@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import logging
 from urllib.parse import urlparse
 
-from crawl4ai import AsyncWebCrawler
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
 
 async def scrape_website(url: str) -> dict:
     """
@@ -28,10 +28,12 @@ async def scrape_website(url: str) -> dict:
             'url': url,
             'content': ''  # Will store the full page content
         }
+
+        crawl_config = CrawlerRunConfig(page_timeout=120000)
         
         # Use the AsyncWebCrawler to extract content
         async with AsyncWebCrawler(verbose=True) as crawler:
-            result = await crawler.arun(url=url)
+            result = await crawler.arun(url=url, config=crawl_config)
             
             if not result.success:
                 raise Exception(f"Failed to crawl website: {result.error if hasattr(result, 'error') else 'Unknown error'}")

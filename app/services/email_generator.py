@@ -2,16 +2,18 @@
 import logging
 import re
 from langchain_core.prompts import ChatPromptTemplate
-from app.utils.website_scraper import scrape_website
-from app.common.env_config import get_envs_setting
+
 from langchain_openai import ChatOpenAI
 from fastapi import HTTPException, status
+
+from app.utils.website_scraper import scrape_website
+from app.common.env_config import get_envs_setting
+from app.schemas.request.splash_page import Operation, EmailStyle
 
 envs = get_envs_setting()
 
 llm = ChatOpenAI(
-    model_name='gpt-4o',
-    temperature=0.7
+    model_name='o3-mini'
 )
 
 # llm = ChatOpenAI(
@@ -121,11 +123,152 @@ Do not include any explanations or notes outside the HTML format. Return only th
 """
 
 
+EMAIL_PROFESSIONAL_TEMPLATE = """
+Write an HTML email ad that reliably lands in Gmail’s Primary inbox.
+
+SUBJECT LINE RULES:
+
+- Use all lowercase.
+- Use only one word, or one word with ~FIRSTNAME~, or just ~FIRSTNAME~.
+- No punctuation, no title casing, no emojis.
+- Personalization (~FIRSTNAME~) may appear before or after the word.
+- Do not use subject lines not confirmed to work.
+
+WORKING SUBJECT LINES:
+
+question  
+really  
+seriously  
+maybe  
+unsure  
+note  
+this  
+try  
+error  
+thoughts  
+oops  
+almost  
+perfect  
+~FIRSTNAME~  
+question ~FIRSTNAME~  
+~FIRSTNAME~ question  
+try ~FIRSTNAME~  
+~FIRSTNAME~ try  
+this ~FIRSTNAME~  
+~FIRSTNAME~ this  
+thoughts ~FIRSTNAME~  
+~FIRSTNAME~ thoughts  
+maybe ~FIRSTNAME~  
+~FIRSTNAME~ maybe  
+error ~FIRSTNAME~  
+~FIRSTNAME~ error  
+almost ~FIRSTNAME~  
+~FIRSTNAME~ almost  
+oops ~FIRSTNAME~  
+~FIRSTNAME~ oops  
+perfect ~FIRSTNAME~  
+~FIRSTNAME~ perfect
+
+EMAIL BODY RULES:
+
+- Use only <p> tags with inline styles like this:  
+  <p style="font-size:17px;">Your sentence here.</p>
+
+- Do not include: <style>, <head>, <body>, <div>, <span>, or any other tags.
+
+- Do not include preheader filler — the system already adds it.
+
+GREETING:
+
+- Start with a casual, lowercase personalized greeting. Examples:  
+  <p style="font-size:17px;">Hey ~FIRSTNAME~</p>  
+  <p style="font-size:17px;">hi ~FIRSTNAME~</p>  
+  <p style="font-size:17px;">alright ~FIRSTNAME~</p>  
+  <p style="font-size:17px;">~FIRSTNAME~</p>
+
+TONE & STYLE:
+
+- Keep the tone friendly, natural, and unscripted — like a message from a friend.
+- Use short sentences, occasional rambling or pause, and light human errors.
+- Rotate tone (curious, skeptical, chill, humorous, reflective).
+- Keep message short — 2-3 sentences max.
+
+HUMAN-LIKE ERROR RULES:
+
+✅ Include exactly one straight apostrophe (')  
+✅ Include one word that’s missing its apostrophe (like dont, isnt, thats)  
+❌ Do not use any curly apostrophes (’)  
+❌ Do not use em dashes (—)
+
+LINK RULES:
+
+- Include one or two raw links mid-sentence only.
+- Never place links on their own line.
+- Never use buttons or phrases like "click here."
+
+✅ GOOD:  
+<p style="font-size:17px;">...ran into this: https://example.com</p>
+
+🚫 BAD:  
+<p style="font-size:17px;">https://example.com</p>  
+<p style="font-size:17px;">Click here now!</p>
+
+EMOJI RULE (optional):
+
+- Use only one emoji if it fits naturally.
+- Use HTML code like &#128514;
+- Place mid-sentence or at end of sentence (never near a link)
+
+SIGN-OFF:
+
+End with a simple first-name sign-off:  
+<p style="font-size:17px;">Ben</p>  
+<br><br><br>
+
+WEBSITE INFORMATION:
+Website URL: {website_url}
+Website Content:
+{website_content}
+
+USER PROMPT:
+{user_prompt}
+
+Do not include any explanations or notes outside the HTML format. Return only the complete HTML code.
+"""
+
+EMAIL_PROFESSIONAL_REFINEMENT_TEMPLATE = """
+You are an expert email marketing specialist who refines professional, inbox-friendly emails.
+
+Your task is to refine the existing professional HTML email advertisement based on the user's feedback. Follow these guidelines:
+
+GUIDELINES:
+1. Keep the tone friendly, personal, and conversational.
+2. Maintain a story-based narrative without promotional language.
+3. Use minimal formatting: plain paragraphs only, without buttons, images, or bold call-to-actions.
+4. Limit links to no more than 1–2, ensuring they appear as natural, readable URLs.
+5. Avoid emojis, buzzwords, and urgency phrases.
+6. Include a preheader filler using a hidden div with non-breaking spaces.
+7. Use simple inline CSS only if necessary.
+8. Conclude with a personal sign-off (only a name, no titles or corporate info).
+9. Do not include logos, graphics, or tracking pixels.
+10. Maintain the original HTML structure as much as possible, making only the changes requested.
+11. Use the provided website URL as the primary link wherever applicable.
+
+ORIGINAL EMAIL:
+{previous_email}
+
+USER FEEDBACK FOR REFINEMENT:
+{user_prompt}
+
+Do not include any explanations or notes outside the HTML format. Return only the complete HTML code.
+"""
+
 
 async def generate_email_advertisement(
     prompt: str,
     website_url: str,
-    operation: str = "generate",
+    operation: Operation,
+    email_style: EmailStyle,
     previous_email: str = None
 ) -> str:
     """
@@ -135,59 +278,88 @@ async def generate_email_advertisement(
         prompt: User prompt/instructions
         website_url: URL of the website to scrape
         operation: 'generate' for new email or 'refine' to update existing
+        email_style: Style of the email (professional/salesy)
         previous_email: Previous email content (for refinement)
         
     Returns:
         str: Generated or refined email content
     """
     try:
-        logging.info(f"Email generation request - Operation: {operation}, URL: {website_url}")
+        logging.info(f"Email generation request - Operation: {operation}, URL: {website_url}, Style: {email_style}")
         
-        if operation == "refine" and previous_email:
-            print(f"Operation is refine so updating the existing email {previous_email}")
-            refinement_prompt = ChatPromptTemplate.from_template(EMAIL_REFINEMENT_TEMPLATE)
-            chain = refinement_prompt | llm
-            
-            response = await chain.ainvoke({
-                "user_prompt": prompt,
-                "previous_email": previous_email
-            })
-
-            response = extract_pure_html(response.content)
-            return response
-            
-            # return response.content
+        if email_style == "professional":
+            if operation == "refine" and previous_email:
+                logging.info("Using professional refinement template")
+                refinement_prompt = ChatPromptTemplate.from_template(EMAIL_PROFESSIONAL_REFINEMENT_TEMPLATE)
+                chain = refinement_prompt | llm
+                
+                response = await chain.ainvoke({
+                    "user_prompt": prompt,
+                    "previous_email": previous_email
+                })
+                
+                response = extract_pure_html(response.content)
+                return response
+            else:
+                logging.info("Using professional generation template")
+                website_data = await scrape_website(website_url)
+                
+                if 'error' in website_data:
+                    logging.error(f"Website scraping error: {website_data['error']}")
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Failed to scrape website: {website_data['error']}"
+                    )
+                
+                generation_prompt = ChatPromptTemplate.from_template(EMAIL_PROFESSIONAL_TEMPLATE)
+                chain = generation_prompt | llm
+                
+                response = await chain.ainvoke({
+                    "user_prompt": prompt,
+                    "website_url": website_url,
+                    "website_content": website_data.get('content', '')
+                })
+                
+                response = extract_pure_html(response.content)
+                return response
+        else:
+            if operation == "refine" and previous_email:
+                logging.info("Using regular refinement template")
+                refinement_prompt = ChatPromptTemplate.from_template(EMAIL_REFINEMENT_TEMPLATE)
+                chain = refinement_prompt | llm
+                
+                response = await chain.ainvoke({
+                    "user_prompt": prompt,
+                    "previous_email": previous_email
+                })
+                
+                response = extract_pure_html(response.content)
+                return response
+            else:
+                logging.info("Using regular generation template")
+                website_data = await scrape_website(website_url)
+                
+                if 'error' in website_data:
+                    logging.error(f"Website scraping error: {website_data['error']}")
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Failed to scrape website: {website_data['error']}"
+                    )
+                
+                generation_prompt = ChatPromptTemplate.from_template(EMAIL_GENERATION_TEMPLATE)
+                chain = generation_prompt | llm
+                
+                response = await chain.ainvoke({
+                    "user_prompt": prompt,
+                    "website_url": website_url,
+                    "website_content": website_data.get('content', '')
+                })
+                
+                response = extract_pure_html(response.content)
+                return response
         
-        # For new email generation, scrape the website first
-
-        print(f"Operation is generate.....")
-
-        website_data = await scrape_website(website_url)
-        
-        if 'error' in website_data:
-            logging.error(f"Website scraping error: {website_data['error']}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Failed to scrape website: {website_data['error']}"
-            )
-        
-        generation_prompt = ChatPromptTemplate.from_template(EMAIL_GENERATION_TEMPLATE)
-        chain = generation_prompt | llm
-
-        # Also update in the generate_email_advertisement function:
-        response = await chain.ainvoke({
-            "user_prompt": prompt,
-            "website_url": website_url,
-            "website_content": website_data.get('content', '')
-        })
-
-        response = extract_pure_html(response.content)
-        return response
-        
-        # return response.content
         
     except HTTPException as e:
-        # Re-raise HTTP exceptions
         raise e
     except Exception as e:
         logging.error(f"Email generation failed: {str(e)}")

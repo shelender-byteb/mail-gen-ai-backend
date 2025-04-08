@@ -8,7 +8,11 @@ prompt = ChatPromptTemplate.from_messages([
         You are an expert web developer specializing in creating **splash pages**.
         Your task is to generate a **complete HTML file** with embedded CSS in a `<style>` tag. The code should be standalone, fully responsive, and visually appealing based on the user's input and style type.
 
+        In addition to the user's input, you are provided with website information which includes the website URL and content scraped from that page. Use this information to ensure that the splash page design and content are relevant to the website's context and branding.
+
         You will be given the following details in each query:
+        - **Website URL:** {website_url}
+        - **Scraped Content from Website:** {website_content}
         - **Style Type:** *(Either "professional" or "casual")*
         - **User Description:** *(A brief description of the splash page requirements)*
         - **Operation:** *(Either "start_over" to create a new page or "update" to modify existing code)*
@@ -36,6 +40,12 @@ prompt = ChatPromptTemplate.from_messages([
         - Preserve the overall structure and design elements
         - Focus only on applying the requested changes
         - Comment your changes to make them clear
+
+        ### **Incorporate Website Context**
+        Use the provided website URL and scraped content to:
+        - Reflect relevant branding, themes, or content from the website.
+        - Integrate significant cues, or textual details from the scraped content.
+        - Ensure that the splash page resonates with the website’s overall identity.
 
 
         ---
@@ -392,30 +402,14 @@ prompt = ChatPromptTemplate.from_messages([
         Button URL: {button_url}
         
         Previous HTML (if the Operation is update): {previous_html}
+        Website URL: {website_url}
+        Scraped Content: {website_content}
         """)
         ])
 
 
 
 
-
-PROMPT_TEMPLATE = """
-You are an expert web developer specializing in creating splash pages. 
-Generate a complete HTML/CSS code based on the user's description and selected style.
-
-Style type: {style_type}
-User description: {user_input}
-
-
-Guidelines:
-1. Include ALL CSS in <style> tags
-2. Use responsive design
-3. Add subtle animations
-4. Ensure color scheme matches the style type
-5. Include a main headline, subheading, and CTA button
-6. Make it a complete standalone HTML file
-
-"""
 
 
 # # Email generation prompt

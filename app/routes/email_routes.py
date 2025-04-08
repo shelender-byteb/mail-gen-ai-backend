@@ -26,18 +26,20 @@ async def generate_email(
             prompt=data.prompt,
             website_url=data.website_url,
             operation=data.operation,
+            email_style=data.email_style,
             previous_email=data.previous_email
         )
 
         logging.info(f"Email generation successful:\n{email_content}\n\n")
         
         return JSONResponse(
-            content={"email": email_content},
-            headers={"Content-Type": "application/json; charset=utf-8"}
+            content={"email": email_content}
+            # headers={"Content-Type": "application/json; charset=utf-8"}
         )
         
     except Exception as e:
         logging.error(f"Email generation API error: {str(e)}")
+        print(f"Email generation error: {str(e)}")
         if isinstance(e, HTTPException):
             raise e
         else:

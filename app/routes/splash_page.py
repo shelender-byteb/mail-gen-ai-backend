@@ -101,7 +101,9 @@ async def generate_html_page(
             print('page_id new is: ',page_id)
 
 
+        print("Database commit processing...")
         await session.commit()
+        print("Database commit successful")
         
         return JSONResponse(
             content={
