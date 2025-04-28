@@ -40,6 +40,7 @@ async def scrape_website(url: str) -> dict:
             
             # Store the full markdown content
             website_info['content'] = result.markdown
+            print(f"Website content: {website_info['content']}")
         
         logging.info(f"Successfully scraped website: {url}")
         return website_info

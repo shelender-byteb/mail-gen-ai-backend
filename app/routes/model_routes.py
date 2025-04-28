@@ -24,7 +24,7 @@ def get_all_models(session: Session = Depends(get_db)):
     }
 
 @router.get("/{model_type}", status_code=status.HTTP_200_OK)
-def get_model(model_type: str, session: Session = Depends(get_db)):
+def get_model(model_type: ModelType, session: Session = Depends(get_db)):
     """
     Retrieve a specific model configuration by its type.
     """
@@ -51,11 +51,11 @@ def upsert_model(
     Update an existing model configuration or create a new one if it doesn't exist.
     Only allowed model types can be updated/added.
     """
-    if model_type not in ALLOWED_MODEL_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid model type"
-        )
+    # if model_type not in ALLOWED_MODEL_TYPES:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail="Invalid model type"
+    #     )
     model_config = session.query(ModelConfig).filter(ModelConfig.model_type == model_type).first()
     if not model_config:
         # Create new record if not present
@@ -72,3 +72,22 @@ def upsert_model(
     session.commit()
     session.refresh(model_config)
     return {model_type: {"model_name": model_config.model_name, "temperature": model_config.temperature}}
+
+
+
+# @router.delete("/{model_type}", status_code=status.HTTP_204_NO_CONTENT)
+# def delete_model(model_type: str, session: Session = Depends(get_db)):
+#     """
+#     Delete an old model configuration if it is no longer required.
+#     """
+    
+#     model_config = session.query(ModelConfig).filter(ModelConfig.model_type == model_type).first()
+#     if not model_config:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Model configuration not found"
+#         )
+    
+#     session.delete(model_config)
+#     session.commit()
+#     return {"detail": f"{model_type} model configuration deleted successfully."}

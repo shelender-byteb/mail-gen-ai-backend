@@ -1,8 +1,15 @@
 # app/routes/email_routes.py
 from fastapi import APIRouter, Depends, status, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
 from app.schemas.request.splash_page import EmailGenerationRequest
 from app.services.email_generator import generate_email_advertisement
+
+from app.common import database_config
+
+
 import logging
 
 router = APIRouter(
@@ -15,6 +22,8 @@ router = APIRouter(
 async def generate_email(
     data: EmailGenerationRequest,
     background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(database_config.get_async_db)
+
 ):
     """
     Generate or refine an email advertisement by scraping a website and using AI.
@@ -25,9 +34,11 @@ async def generate_email(
         email_content = await generate_email_advertisement(
             prompt=data.prompt,
             website_url=data.website_url,
+            session=session,
             operation=data.operation,
             email_style=data.email_style,
-            previous_email=data.previous_email
+            previous_email=data.previous_email,
+            image_urls=data.image_urls,
         )
 
         logging.info(f"Email generation successful:\n{email_content}\n\n")
@@ -43,7 +54,7 @@ async def generate_email(
         if isinstance(e, HTTPException):
             raise e
         else:
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Email generation failed: {str(e)}"
+                content={"error": "Failed to generate splash page"}
             )

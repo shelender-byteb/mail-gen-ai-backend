@@ -1,8 +1,13 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.schemas.request.banner import BannerGenerationRequest
 from app.services.banner_generator import generate_banner
+
+from app.common import database_config
+
 
 import logging
 
@@ -13,13 +18,14 @@ router = APIRouter(
 )
 
 @router.post("/generate", status_code=status.HTTP_200_OK)
-async def generate_banner_endpoint(data: BannerGenerationRequest):
+async def generate_banner_endpoint(data: BannerGenerationRequest, session: AsyncSession = Depends(database_config.get_async_db)):
     """
     Generate or refine an AI banner.
     """
     try:
         banner_html = await generate_banner(
             prompt=data.user_prompt,
+            session=session,
             height=data.height,
             width=data.width,
             operation=data.operation,

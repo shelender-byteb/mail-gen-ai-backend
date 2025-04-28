@@ -1,5 +1,7 @@
 import uuid
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Depends, status, Request
 from fastapi import BackgroundTasks, HTTPException
@@ -7,7 +9,7 @@ from app.schemas.response.splash_page import SplashPageResponse
 
 
 from app.schemas.response.splash_page import ChatbotResponse, GetMessagesResponse
-from app.schemas.request.splash_page import UserChat, GenerationRequest
+from app.schemas.request.splash_page import GenerationRequest
 from app.common import database_config
 from app.services import splash_page_generator
 from app.common.env_config import get_envs_setting
@@ -29,7 +31,7 @@ router = APIRouter(
 async def generate_html_page(
     data: GenerationRequest,
     background_tasks: BackgroundTasks,
-    session: Session = Depends(database_config.get_async_db)
+    session: AsyncSession = Depends(database_config.get_async_db)
 ):
     """
     Generate a splash page HTML based on description and style type.
@@ -42,6 +44,7 @@ async def generate_html_page(
     operation = data.operation
     previous_html = data.previous_html
     button_url = data.button_url
+    image_urls = data.image_url
 
     if style_type not in ["professional", "casual"]:
         raise HTTPException(
@@ -70,9 +73,11 @@ async def generate_html_page(
         html_content = await splash_page_generator.generate_splash_page(
             query, 
             style_type, 
+            session,
             operation, 
             previous_html,
-            button_url
+            button_url,
+            image_urls,
         )
             # Create new splash page record
         if data.operation == "update":
@@ -116,10 +121,11 @@ async def generate_html_page(
     except Exception as e:
         await session.rollback()
         print(f"API Error: {str(e)}")
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            content={"error": f"Failed to generate splash page: {str(e)}"}
         )
+
     
 @router.get("/{page_id}", response_model=SplashPageResponse)
 def get_splash_page(

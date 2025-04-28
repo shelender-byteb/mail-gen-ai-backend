@@ -18,7 +18,7 @@ def get_all_templates(session: Session = Depends(get_db)):
     return {template.template_type: template.content for template in templates}
 
 @router.get("/{template_type}", status_code=status.HTTP_200_OK)
-def get_template(template_type: str, session: Session = Depends(get_db)):
+def get_template(template_type: TemplateType, session: Session = Depends(get_db)):
     """
     Retrieve a specific template by its type.
     """
@@ -50,3 +50,21 @@ def upsert_template(
     session.commit()
     session.refresh(template)
     return {template_type: template.content}
+
+
+
+# @router.delete("/{template_type}", status_code=status.HTTP_204_NO_CONTENT)
+# def delete_template(template_type: str, session: Session = Depends(get_db)):
+#     """
+#     Delete a template by its type.
+#     """
+#     template = session.query(Template).filter(Template.template_type == template_type).first()
+#     if not template:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Template not found"
+#         )
+    
+#     session.delete(template)
+#     session.commit()
+#     return {"detail": f"{template_type} template deleted successfully."}

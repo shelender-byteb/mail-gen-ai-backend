@@ -1,8 +1,14 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from app.schemas.request.blurb_requests import PowerBlurbGenerationRequest, PowerBlurbGenerationResponse
 from app.services.blurb_generator import generate_power_blurb
+
+from app.common import database_config
+
+
 import logging
 
 router = APIRouter(
@@ -13,7 +19,7 @@ router = APIRouter(
 
 @router.post("/generate", status_code=status.HTTP_200_OK, response_model=PowerBlurbGenerationResponse)
 async def generate_power_blurb_endpoint(
-    data: PowerBlurbGenerationRequest,
+    data: PowerBlurbGenerationRequest, session: AsyncSession = Depends(database_config.get_async_db)
 ):
     """
     Generate or refine a PowerBlurb advertisement by scraping a website and using AI.
@@ -23,6 +29,7 @@ async def generate_power_blurb_endpoint(
     try:
         blurb_content = await generate_power_blurb(
             prompt=data.prompt,
+            session=session,
             website_url=data.website_url,
             operation=data.operation,
             previous_blurb=data.previous_blurb

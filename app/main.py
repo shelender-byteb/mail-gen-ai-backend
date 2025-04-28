@@ -2,10 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from app.routes import splash_page, email_routes, template_routes, model_routes, banner_routes, autocomplete_routes, blurb_routes
+from app.utils.middleware import PerformanceMiddleware
 
 origins = [
     "http://localhost:3000",
     "http://localhost:3001",
+    "https://mail-gen-ai-frontend.vercel.app"
     # "http://192.168.18.10:5173",
     # "http://localhost:5173",
     # "http://pdc-frontend-chatbot.s3-website-us-east-1.amazonaws.com",
@@ -39,11 +41,19 @@ def create_application():
 
 
 app = create_application()
+
+# Add Performance Middleware BEFORE other middleware
+# This ensures it captures the full request lifecycle
+# app.add_middleware(
+#     PerformanceMiddleware,
+#     log_threshold_ms=1000  # Log as warning if request takes more than 1000ms
+# )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allows specified origins to make requests
-    allow_credentials=True,  # Allows cookies to be included in cross-origin HTTP requests
-    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_origins=["*"],  # Allows all origins (Change to frontend origin in production)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
     allow_headers=["*"],  # Allows all headers
 )
 
@@ -61,10 +71,10 @@ async def health():
 
 
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (Change to frontend origin in production)
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows all HTTP methods
-    allow_headers=["*"],  # Allows all headers
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,  # Allows specified origins to make requests
+#     allow_credentials=True,  # Allows cookies to be included in cross-origin HTTP requests
+#     allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+#     allow_headers=["*"],  # Allows all headers
+# )

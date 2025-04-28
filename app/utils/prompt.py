@@ -11,13 +11,14 @@ prompt = ChatPromptTemplate.from_messages([
         In addition to the user's input, you are provided with website information which includes the website URL and content scraped from that page. Use this information to ensure that the splash page design and content are relevant to the website's context and branding.
 
         You will be given the following details in each query:
-        - **Website URL:** {website_url}
-        - **Scraped Content from Website:** {website_content}
+        - **Website URL:** {website_url} *(Only provided during "start_over" operations. Shall not be given during "update" operations)*
+        - **Scraped Content from Website:** {website_content} *(Only provided during "start_over" operations. Shall not be given during "update" operations)*
         - **Style Type:** *(Either "professional" or "casual")*
         - **User Description:** *(A brief description of the splash page requirements)*
         - **Operation:** *(Either "start_over" to create a new page or "update" to modify existing code)*
         - **Previous HTML:** *(When operation is "update", this contains the HTML to modify)*
         - **Button URL:** *(URL to associate with the CTA button - should open in a new tab)*
+        - **Image URLs:** *(A list of image URLs provided by the user to include in the splash page)*
 
         ---
 
@@ -40,6 +41,23 @@ prompt = ChatPromptTemplate.from_messages([
         - Preserve the overall structure and design elements
         - Focus only on applying the requested changes
         - Comment your changes to make them clear
+        9. When generating a splash page for a casual style type, do not directly use the word "cosmic" or its derivatives. Instead, if you wish to evoke a space-inspired vibe, use alternative terms such as "galactic," "stellar," "astral," or "space-inspired." Vary your vocabulary to maintain creativity and avoid repetitive terminology.
+        10. CRITICAL: Integrate textual details from the website scraped content.
+        11. **Content Overflow Handling:**
+        - Ensure content is automatically scrollable if it overflows the viewport.
+        - Add the following CSS rules to the body or container element:
+            - For vertical overflow: `overflow-y: auto;`
+            - For horizontal overflow: `overflow-x: hidden;` (to prevent horizontal scrolling)
+        - For mobile responsiveness, ensure content remains accessible through scrolling when it exceeds screen dimensions.
+        - Always give body the following style: height: max-content;
+        12. **Image URLs:**: Do not use any external image URLs outside website content or fake paths. 
+        13. Don't use rotate animations.
+        14. When the operation is "update", examine the provided image_urls array and replace the previous Pexels image URLs with the new ones from the update request. Leave all other non-Pexels images intact. \
+        For generation operations (start_over), simply include the provided images (if any) as part of the splash page.
+        
+        15. **Design Self‑Check**: Before finalizing, automatically ensure the page exhibits perfect visual harmony—consistent spacing, alignment, and hierarchy—renders flawlessly at all sizes, and contains zero layout or styling glitches - No exceptions
+
+         
 
         ### **Incorporate Website Context**
         Use the provided website URL and scraped content to:
@@ -74,12 +92,14 @@ prompt = ChatPromptTemplate.from_messages([
                     font-family: 'Orbitron', sans-serif;
                     background: linear-gradient(135deg, rgba(25, 25, 112, 0.9), rgba(75, 0, 130, 0.9));
                     color: white;
-                    height: 100vh;
+                    min-height: 100vh; /* Changed from height: 100vh */
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    overflow: hidden;
+                    overflow-y: auto; /* Added for vertical scrolling */
+                    overflow-x: hidden; /* Added to prevent horizontal scrolling */
                     position: relative;
+                    height: max-content;
                 }}
 
                 /* Cosmic Background Animation */
@@ -282,9 +302,12 @@ prompt = ChatPromptTemplate.from_messages([
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    height: 100vh;
+                    min-height: 100vh; /* Changed from height: 100vh */
+                    height: max-content;
                     text-align: center;
-                    overflow: hidden;
+                    overflow-y: auto; /* Added to handle vertical overflow */
+                    overflow-x: hidden; /* Added to prevent horizontal scrolling */
+                    
                 }}
                 .container {{
                     width: 90%;
@@ -400,10 +423,11 @@ prompt = ChatPromptTemplate.from_messages([
         Description: {user_input}
         Operation: {operation}
         Button URL: {button_url}
+        Image URLs: {image_urls}
         
         Previous HTML (if the Operation is update): {previous_html}
-        Website URL: {website_url}
-        Scraped Content: {website_content}
+        Website URL (if the Operation is start_over): {website_url}
+        Scraped Content (if the Operation is start_over): {website_content}
         """)
         ])
 

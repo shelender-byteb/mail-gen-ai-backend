@@ -2,9 +2,12 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 class ModelType(str, Enum):
-    EMAIL = "email"
+    CASUAL_EMAIL = "casual_email"
+    PROFESSIONAL_EMAIL = "professional_email"
     SPLASH_PAGE = "splash_page"
     BANNER = "banner"
+    BLURB = "blurb"
+
 
 
 class ModelUpdateRequest(BaseModel):
