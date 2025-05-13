@@ -18,7 +18,7 @@ from app.utils.email_chain_prompt import email_generation_prompt, generted_by_mo
 from app.schemas.request.model_update import ModelType
 from app.schemas.request.template_update import TemplateType
 
-from app.utils.database_utils import load_model_config, load_system_template
+from app.utils.database_utils import load_model_config, load_system_template, get_llm
 
 
 envs = get_envs_setting()
@@ -42,14 +42,6 @@ You are an expert email marketing specialist who helps refine and improve email 
 
 Your task is to refine the existing HTML email advertisement based on the user's feedback.
 
-ORIGINAL EMAIL:
-{previous_email}
-
-USER FEEDBACK FOR REFINEMENT:
-{user_prompt}
-
-IMAGE URLS PROVIDED BY USER (if provided, embed each image using the <img> tag with inline CSS styling exactly as provided; do not use any images from the website content or any other source. Only the URLs listed in the {image_urls} field are permitted):
-{image_urls}
 
 GUIDELINES:
 1. Maintain the original structure and HTML format of the email
@@ -90,7 +82,11 @@ GUIDELINES GIVEM WHILE GENERATING PREVIOUS EMAIL:
 19. CRITICAL: If image URLs are provided, incorporate each image into the email HTML using <img> tags. Place them in visually strategic locations (for example, as header or content images) with inline CSS styling, explicit width and height attributes, and appropriate alt text.
 
 
-Do not include any explanations or notes outside the HTML format. Return only the complete HTML code.
+You will be given the following details in each query:
+- **Original Email HTML:** {previous_email}
+- **User Feedback:** {user_prompt}
+- **Image URLs (if any):** {image_urls}
+
 """
 
 
@@ -186,8 +182,6 @@ It must be at least 1100 words long and no more than 1500 words long — no exce
 
 The word count must be verified using an actual word count method — not estimated, not guessed.
 
-The response must include the exact reflection word count in the reply before the code block.
-
 If the reflection block is under 1100 words, it must be expanded before submitting the email. Do not continue or respond with the email until the reflection is fully extended to 1100+ words.
 
 If the required word count is not met, the email will go to Gmail's Promotions tab and become junk. This requirement is critical. ⚠️
@@ -247,22 +241,16 @@ and be written like a casual, human note — not a headline or label.
 
 The reflection block must be 1100 words minimum and 1500 words maximum, confirmed by exact count
 
-The assistant must state the reflection word count clearly before the email block
-
 No email can be sent unless the reflection is 1100 words or more
 
 
 Follow this format EXACTLY. No substitutions:
 
-WEBSITE INFORMATION:
-Website URL: {website_url}
-Website Content:
-{website_content}
+You will be given the following details in each query:
+- **Website URL:** {website_url}
+- **Scraped Content from Website:** {website_content}
+- **User Description:** {user_prompt}
 
-USER PROMPT:
-{user_prompt}
-
-Do not include any explanations or notes outside the HTML format. Return only the complete HTML code.
 """
 
 EMAIL_PROFESSIONAL_REFINEMENT_TEMPLATE = """
@@ -356,8 +344,6 @@ It must be at least 1100 words long and no more than 1500 words long— no excep
 
 The word count must be verified using an actual word count method — not estimated, not guessed.
 
-The response must include the exact reflection word count in the reply before the code block.
-
 If the reflection block is under 1100 words, it must be expanded before submitting the email. Do not continue or respond with the email until the reflection is fully extended to 1100+ words.
 
 If the required word count is not met, the email will go to Gmail's Promotions tab and become junk. This requirement is critical. ⚠️
@@ -418,20 +404,14 @@ and be written like a casual, human note — not a headline or label.
 
 The reflection block must be 1100 words minimum and 1500 words maximum, confirmed by exact count
 
-The assistant must state the reflection word count clearly before the email block
-
 No email can be sent unless the reflection is 1100 words or more
 
 
 Follow this format EXACTLY. No substitutions:
 
-ORIGINAL EMAIL:
-{previous_email}
-
-USER FEEDBACK FOR REFINEMENT:
-{user_prompt}
-
-Do not include any explanations or notes outside the HTML format. Return only the complete HTML code.
+You will be given the following details in each query:
+- **Original Email HTML to edit:** {previous_email}
+- **User Feedback/ Requested changes:** {user_prompt}
 """
 
 
@@ -466,14 +446,21 @@ async def generate_email_advertisement(
                 logging.info("Using professional refinement template")
 
                 cfg = await load_model_config(ModelType.PROFESSIONAL_EMAIL, session)
-                if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name)
-                else:
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+                # if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name)
+                # else:
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+                dyn_llm = get_llm(cfg.provider, cfg.model_name, cfg.temperature)
 
                 EMAIL_PROFESSIONAL_REFINEMENT_DB_SYSTEM_TEMPLATE = await load_system_template(TemplateType.PROFESSIONAL_EMAIL_REFINEMENT, session)
                 EMAIL_PROFESSIONAL_REFINEMENT_DB_HUMAN_TEMPLATE = """
+                ORIGINAL EMAIL:
+                {previous_email}
+
+                USER FEEDBACK FOR REFINEMENT:
+                ```{user_prompt}```
                 """
+                
 
                 refinement_prompt = ChatPromptTemplate.from_messages([
                     ("system", EMAIL_PROFESSIONAL_REFINEMENT_DB_SYSTEM_TEMPLATE),
@@ -505,14 +492,23 @@ async def generate_email_advertisement(
                     )
                 
                 cfg = await load_model_config(ModelType.PROFESSIONAL_EMAIL, session)
-                if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name)
-                else:
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+                # if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name)
+                # else:
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+                dyn_llm = get_llm(cfg.provider, cfg.model_name, cfg.temperature)
             
                 EMAIL_PROFESSIONAL_DB_SYSTEM_TEMPLATE = await load_system_template(TemplateType.PROFESSIONAL_EMAIL_GENERATION, session)
                 EMAIL_PROFESSIONAL_DB_HUMAN_TEMPLATE = """
+                WEBSITE INFORMATION:
+                Website URL: {website_url}
+                Website Content:
+                {website_content}
+
+                USER PROMPT:
+                {user_prompt}
                 """
+
 
                 generation_prompt = ChatPromptTemplate.from_messages([
                     ("system", EMAIL_PROFESSIONAL_DB_SYSTEM_TEMPLATE),
@@ -539,14 +535,22 @@ async def generate_email_advertisement(
                 logging.info("Using regular refinement template")
 
                 cfg = await load_model_config(ModelType.CASUAL_EMAIL, session)
-                if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name)
-                else:
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
-            
+                # if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name)
+                # else:
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+                dyn_llm = get_llm(cfg.provider, cfg.model_name, cfg.temperature)
 
                 EMAIL_REFINEMENT_DB_SYSTEM_TEMPLATE = await load_system_template(TemplateType.CASUAL_EMAIL_REFINEMENT, session)
                 EMAIL_REFINEMENT_DB_HUMAN_TEMPLATE = """
+                ORIGINAL EMAIL:
+                {previous_email}
+
+                USER FEEDBACK FOR REFINEMENT:
+                {user_prompt}
+
+                IMAGE URLS PROVIDED BY USER (embed exactly as given):
+                {image_urls}
                 """
 
                 refinement_prompt = ChatPromptTemplate.from_messages([
@@ -601,11 +605,11 @@ async def generate_email_advertisement(
                 # print(f"Ending prompt of email is : {email_generation_db_prompt[-200:]}\n")
 
                 cfg = await load_model_config(ModelType.CASUAL_EMAIL, session)
-                if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name)
-                else:
-                    dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
-                    
+                # if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name)
+                # else:
+                #     dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+                dyn_llm = get_llm(cfg.provider, cfg.model_name, cfg.temperature)
 
                 chain = email_generation_db_prompt | dyn_llm
                 # chain = email_generation_prompt | llm

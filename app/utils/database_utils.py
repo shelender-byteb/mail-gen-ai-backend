@@ -10,6 +10,11 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException,status, BackgroundTasks
 
+import os
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from langchain_deepseek import ChatDeepSeek
+
 
 async def load_system_template(template_type: TemplateType, session: AsyncSession) -> str:
     # print(f"Template type is {template_type}")
@@ -44,3 +49,39 @@ async def load_model_config(model_type: ModelType, session: AsyncSession) -> Mod
             detail=f"No model configuration found for {model_type}"
         )
     return cfg
+
+
+
+def get_llm(provider: str, model_name: str, temperature: float):
+    """
+    Return a LangChain ChatModel for the given provider.
+    provider: "openai", "anthropic", or "deepseek"
+    """
+    if provider.lower() == "anthropic":
+        # Claude via langchain-anthropic
+        # temperature is supported by ChatAnthropic
+        return ChatAnthropic(model=model_name, temperature=temperature)
+
+    elif provider.lower() == "deepseek":
+        # Option A: Native DeepSeek client
+        return ChatDeepSeek(
+            model=model_name,
+            temperature=temperature,
+            max_tokens=None,
+            timeout=None,
+            max_retries=2,
+        )
+        # Option B: DeepSeek via OpenRouter (OpenAI-compatible)
+        # return ChatOpenAI(
+        #     model_name=model_name,
+        #     temperature=temperature,
+        #     openai_api_base=os.getenv("DEEPSEEK_API_URL"),
+        #     openai_api_key=os.getenv("DEEPSEEK_API_KEY")
+        # )
+
+    else:
+        # OpenAI via langchain_openai
+        # apply your no-temp override for o4-mini / o3-mini
+        if model_name in ("o4-mini", "o3-mini"):
+            return ChatOpenAI(model_name=model_name)
+        return ChatOpenAI(model_name=model_name, temperature=temperature)

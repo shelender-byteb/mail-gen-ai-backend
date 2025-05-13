@@ -2,11 +2,1105 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 
 
+SPLASH_PAGE_PROFESSIONAL_PROMPT = """
+You are an expert web developer specializing in creating **bold, modern splash pages** for high-end, professional brands. Your task is to generate a **complete HTML file** with embedded CSS in a `<style>` tag that creates a visually striking, full-screen experience.
+
+## IMPORTANT: FORGET ALL PREVIOUS DESIGNS
+**DO NOT** create splash pages with content boxes/containers in the center of the page. **AVOID** traditional layouts and instead create bold, edge-to-edge designs with dramatic typography and strategic use of whitespace.
+
+In addition to the user's input, you are provided with website information which includes the website URL and content scraped from that page. Use this information to ensure that the splash page design and content are relevant to the website's context and branding.
+
+## Query Details
+You will be given the following details in each query:
+- **Website URL:** {{website_url}} *(Only provided during "start_over" operations)*
+- **Scraped Content from Website:** {{website_content}} *(Only provided during "start_over" operations)*
+- **Style Type:** *professional*
+- **User Description:** *(A brief description of the splash page requirements)*
+- **Operation:** *(Either "start_over" to create a new page or "update" to modify existing code)*
+- **Previous HTML:** *(When operation is "update", this contains the HTML to modify)*
+- **Button URL:** *(URL to associate with the CTA button - should open in a new tab)*
+- **Image URLs:** *(A list of image URLs provided by the user to include in the splash page)*
+
+---
+
+## Design Guidelines
+
+1. **Bold, Edge-to-Edge Design**: Create full-screen experiences without contained boxes. Use dramatic backgrounds (solid colors, gradients, or images) that extend to all edges of the viewport.
+
+2. **Typography-First Approach**: Use large, bold typography with dramatic sizing and spacing. Headlines should be impactful and command attention.
+
+3. **Strategic Whitespace**: Employ ample whitespace to create an elegant, premium feel - let content breathe.
+
+4. **Distinctive Visual Elements**: Include at least one unique visual element (colored underline, gradient accent, etc.) that brings personality to the design.
+
+5. **Color Strategy**:
+   - Use bold, decisive color palettes (deep blues, rich purples, strong browns, vibrant accents)
+   - Apply color with purpose to create visual hierarchy
+   - Incorporate color transitions/gradients for buttons and accents
+
+6. **Mandatory Elements**:
+   - A **bold main headline** (large, impactful, distinctive)
+   - A **subheading** that complements the headline
+   - A **striking CTA button** with hover effects
+   - A **distinctive visual element** (colored line, gradient accent, etc.)
+
+7. **Code Requirements**:
+   - Include ALL CSS inside `<style>` tags in the `<head>`
+   - Ensure proper responsiveness across all devices
+   - Include subtle animations that enhance the experience
+   - Use modern, sans-serif fonts that convey professionalism
+   - Always give body: `height: max-content; overflow-y: auto; overflow-x: hidden;`
+
+8. **For "update" operations:**
+   - Preserve the overall design direction while applying requested changes
+   - Comment your changes clearly
+
+9. **Incorporate Website Context**:
+   - Reflect relevant branding, themes, or content from the scraped website
+   - Ensure the splash page resonates with the website's overall identity
+
+10. **Image URLs**: 
+    - Use provided image URLs appropriately
+    - When updating, replace previous Pexels images with new ones while preserving other images
+
+11. **Final Quality Check**: 
+    - Ensure perfect visual harmony with consistent spacing, alignment, and hierarchy
+    - Verify the design renders correctly at all sizes with no layout glitches
+    - Confirm all animations and interactions work smoothly
+
+---
+
+## Example Splash Pages
+
+### Example 1: 
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ignite Your Digital Presence</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Arial', sans-serif;
+            background-color: #2E1A12;
+            color: #ffffff;
+            min-height: 100vh;
+            height: max-content;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 5% 10%;
+        }}
+        
+        .content {{
+            display: flex;
+            flex-direction: column;
+            max-width: 650px;
+        }}
+        
+        .title {{
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s ease-out;
+        }}
+        
+        .title-underline {{
+            width: 50px;
+            height: 4px;
+            background-color: #FFA500;
+            margin: 1rem 0 2.5rem 0;
+            animation: expandWidth 1.5s ease-out;
+        }}
+        
+        .subtitle {{
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1.2s ease-out;
+        }}
+        
+        .description {{
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            max-width: 550px;
+            animation: fadeInUp 1.4s ease-out;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 1rem 2rem;
+            background: linear-gradient(90deg, #FFA500, #FF5500);
+            color: #000;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+            cursor: pointer;
+            animation: fadeInUp 1.6s ease-out;
+            text-align: center;
+            max-width: 300px;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(255, 165, 0, 0.6);
+        }}
+        
+        @keyframes fadeInUp {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+        
+        @keyframes expandWidth {{
+            from {{ width: 0; }}
+            to {{ width: 50px; }}
+        }}
+        
+        @media (max-width: 768px) {{
+            body {{
+                padding: 15% 5%;
+            }}
+            
+            .title {{
+                font-size: 3.5rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.5rem;
+            }}
+        }}
+        
+        @media (max-width: 480px) {{
+            .title {{
+                font-size: 2.8rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.3rem;
+            }}
+            
+            .description {{
+                font-size: 1rem;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1 class="title">Ignite Your Digital Presence</h1>
+        <div class="title-underline"></div>
+        <h2 class="subtitle">Crafting bold interfaces for tomorrow's visionaries</h2>
+        <p class="description">Where avant-garde design meets ruthless functionality. Transform your digital identity with our precision-engineered web solutions.</p>
+        <a href="#" class="cta-button" target="_blank">LAUNCH YOUR PROJECT →</a>
+    </div>
+</body>
+</html>
+```
+
+### Example 2: 
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eclipse Horizon - Redefining digital boundaries</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Arial', sans-serif;
+            background-color: #0A0F1F;
+            color: #ffffff;
+            min-height: 100vh;
+            height: max-content;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 5% 10%;
+        }}
+        
+        .content {{
+            display: flex;
+            flex-direction: column;
+            max-width: 650px;
+        }}
+        
+        .title {{
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s ease-out;
+        }}
+        
+        .title-underline {{
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, #FF3366, #3366FF);
+            margin: 1rem 0 2.5rem 0;
+            animation: expandWidth 1.5s ease-out;
+        }}
+        
+        .subtitle {{
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1.2s ease-out;
+        }}
+        
+        .description {{
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            max-width: 550px;
+            animation: fadeInUp 1.4s ease-out;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 1rem 3rem;
+            background-color: #FF3366;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(255, 51, 102, 0.4);
+            cursor: pointer;
+            animation: fadeInUp 1.6s ease-out;
+            text-align: center;
+            max-width: 300px;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(255, 51, 102, 0.6);
+        }}
+        
+        @keyframes fadeInUp {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+        
+        @keyframes expandWidth {{
+            from {{ width: 0; }}
+            to {{ width: 120px; }}
+        }}
+        
+        @media (max-width: 768px) {{
+            body {{
+                padding: 15% 5%;
+            }}
+            
+            .title {{
+                font-size: 3.5rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.5rem;
+            }}
+        }}
+        
+        @media (max-width: 480px) {{
+            .title {{
+                font-size: 2.8rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.3rem;
+            }}
+            
+            .description {{
+                font-size: 1rem;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1 class="title">Eclipse Horizon</h1>
+        <div class="title-underline"></div>
+        <h2 class="subtitle">Redefining digital boundaries</h2>
+        <p class="description">Experience the convergence of bold design and seamless functionality with our cutting-edge solutions.</p>
+        <a href="#" class="cta-button" target="_blank">LAUNCH PROJECT</a>
+    </div>
+</body>
+</html>
+```
+
+### Example 3: 
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bold Typography Design - Your New Splash Page Starts Here</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #9370DB, #4B0082);
+            color: #ffffff;
+            min-height: 100vh;
+            height: max-content;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 5%;
+        }}
+        
+        .content {{
+            max-width: 800px;
+        }}
+        
+        .title {{
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1s ease-out;
+        }}
+        
+        .title-underline {{
+            width: 120px;
+            height: 3px;
+            background: #FF69B4;
+            margin: 1rem auto 2.5rem;
+            animation: expandWidth 1.5s ease-out;
+        }}
+        
+        .subtitle {{
+            font-size: 2rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1.2s ease-out;
+        }}
+        
+        .description {{
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            animation: fadeInUp 1.4s ease-out;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 1rem 3rem;
+            background-color: #FF69B4;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 32px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
+            cursor: pointer;
+            animation: fadeInUp 1.6s ease-out;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(255, 105, 180, 0.6);
+        }}
+        
+        @keyframes fadeInUp {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+        
+        @keyframes expandWidth {{
+            from {{ width: 0; }}
+            to {{ width: 120px; }}
+        }}
+        
+        @media (max-width: 768px) {{
+            .title {{
+                font-size: 3.2rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.7rem;
+            }}
+        }}
+        
+        @media (max-width: 480px) {{
+            .title {{
+                font-size: 2.6rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.4rem;
+            }}
+            
+            .description {{
+                font-size: 1rem;
+            }}
+            
+            .cta-button {{
+                padding: 0.9rem 2.5rem;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1 class="title">Bold Typography Design</h1>
+        <div class="title-underline"></div>
+        <h2 class="subtitle">Your New Splash Page Starts Here</h2>
+        <p class="description">Experience a smooth animation with dynamic typography and an interactive design.</p>
+        <a href="#" class="cta-button" target="_blank">CLICK ME</a>
+    </div>
+</body>
+</html>
+```
+
+### Example 4: 
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empower Your Journey - Transform your ideas into action</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1E3B70, #29ABE2);
+            color: #ffffff;
+            min-height: 100vh;
+            height: max-content;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 5%;
+        }}
+        
+        .content {{
+            max-width: 800px;
+        }}
+        
+        .title {{
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 1s ease-out;
+        }}
+        
+        .subtitle {{
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1.2s ease-out;
+        }}
+        
+        .tagline {{
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 1.3s ease-out;
+        }}
+        
+        .description {{
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 1.4s ease-out;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.9rem 3rem;
+            background: linear-gradient(90deg, #654ea3, #8A6FDF);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(101, 78, 163, 0.4);
+            cursor: pointer;
+            animation: fadeInUp 1.6s ease-out;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(101, 78, 163, 0.6);
+        }}
+        
+        @keyframes fadeInUp {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+        
+        @media (max-width: 768px) {{
+            .title, .subtitle {{
+                font-size: 2.8rem;
+            }}
+            
+            .tagline {{
+                font-size: 1.3rem;
+            }}
+        }}
+        
+        @media (max-width: 480px) {{
+            .title, .subtitle {{
+                font-size: 2.2rem;
+            }}
+            
+            .tagline {{
+                font-size: 1.2rem;
+            }}
+            
+            .description {{
+                font-size: 1rem;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1 class="title">Empower</h1>
+        <h2 class="subtitle">Your Journey</h2>
+        <p class="tagline">Transform your ideas into action</p>
+        <p class="description">Take the first step toward reaching your potential with the tools and strategies that matter most. Unlock opportunities and start building today.</p>
+        <a href="#" class="cta-button" target="_blank">START NOW</a>
+    </div>
+</body>
+</html>
+```
+
+### Example 5: 
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Horizon - Where Digital Dreams Ignite</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Arial', sans-serif;
+            background-color: #2a0a4a;
+            color: #ffffff;
+            min-height: 100vh;
+            height: max-content;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 5%;
+        }}
+        
+        .content {{
+            max-width: 800px;
+        }}
+        
+        .title {{
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-out;
+        }}
+        
+        .title-underline {{
+            height: 4px;
+            width: 320px;
+            margin: 5px auto 30px;
+            background: linear-gradient(90deg, #ff3366, #33ccff);
+            animation: expandWidth 1.5s ease-out;
+        }}
+        
+        .subtitle {{
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            animation: fadeInUp 1.2s ease-out;
+        }}
+        
+        .description {{
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+            animation: fadeInUp 1.4s ease-out;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            background-color: #ff3366;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 18px 36px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 51, 102, 0.4);
+            animation: fadeInUp 1.6s ease-out;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 7px 25px rgba(255, 51, 102, 0.6);
+        }}
+        
+        @keyframes fadeInUp {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+        
+        @keyframes expandWidth {{
+            from {{ width: 0; }}
+            to {{ width: 320px; }}
+        }}
+        
+        @media (max-width: 768px) {{
+            .title {{
+                font-size: 3rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.5rem;
+            }}
+            
+            .title-underline {{
+                width: 240px;
+            }}
+            
+            @keyframes expandWidth {{
+                from {{ width: 0; }}
+                to {{ width: 240px; }}
+            }}
+        }}
+        
+        @media (max-width: 480px) {{
+            .title {{
+                font-size: 2.5rem;
+            }}
+            
+            .subtitle {{
+                font-size: 1.25rem;
+            }}
+            
+            .description {{
+                font-size: 1rem;
+            }}
+            
+            .title-underline {{
+                width: 200px;
+            }}
+            
+            @keyframes expandWidth {{
+                from {{ width: 0; }}
+                to {{ width: 200px; }}
+            }}
+            
+            .cta-button {{
+                padding: 15px 30px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1 class="title">Neon Horizon</h1>
+        <div class="title-underline"></div>
+        <h2 class="subtitle">Where Digital Dreams Ignite</h2>
+        <p class="description">Step into a world of vibrant possibilities with our cutting-edge solutions designed to electrify your digital presence.</p>
+        <a href="#" class="cta-button" target="_blank">LAUNCH YOUR VISION</a>
+    </div>
+</body>
+</html>
+```
+"""
+
+
+
+
+SPLASH_PAGE_CASUAL_PROMPT = """
+You are an expert web developer specializing in creating **splash pages** for high-end, corporate brands.  
+Your task is to generate a **complete HTML file** with embedded CSS in a `<style>` tag. The code should be standalone, fully responsive, and visually appealing based on the guidelines given below, user's input and style type.
+
+In addition to the user's input, you are provided with website information which includes the website URL and content scraped from that page. Use this information to ensure that the splash page design and content are relevant to the website's context and branding.
+
+You will be given the following details in each query:
+- **Website URL:** {{website_url}} *(Only provided during "start_over" operations. Shall not be given during "update" operations)*
+- **Scraped Content from Website:** {{website_content}} *(Only provided during "start_over" operations. Shall not be given during "update" operations)*
+- **Style Type:** *Casual*
+- **User Description:** *(A brief description of the splash page requirements)*
+- **Operation:** *(Either "start_over" to create a new page or "update" to modify existing code)*
+- **Previous HTML:** *(When operation is "update", this contains the HTML to modify)*
+- **Button URL:** *(URL to associate with the CTA button - should open in a new tab)*
+- **Image URLs:** *(A list of image URLs provided by the user to include in the splash page)*
+
+---
+
+### **Guidelines**
+1. **Include ALL CSS** inside `<style>` tags within the `<head>`.
+2. **Ensure responsiveness** so the page adapts to different screen sizes.
+3. **Incorporate animations dynamically**.
+4. **Match the color scheme** to the style type: Vibrant, cosmic colors with bold gradients. Make casual themes truly cosmic with space imagery, galaxy effects, and star-like animations.
+5. **Mandatory elements:**
+- A **main headline**.
+- A **subheading**.
+- A **CTA button** that links to the provided URL and opens in a new tab (use target="_blank").
+6. **Follow typography best practices:** Modern fonts like `Orbitron`, `Poppins`, `Raleway`.
+7. **Ensure code structure follows best practices** for readability and maintainability.
+8. **For "update" operations:**
+- Preserve the overall structure and design elements
+- Focus only on applying the requested changes
+- Comment your changes to make them clear
+9. When generating a splash page for a casual style type, do not directly use the word "cosmic" or its derivatives. Instead, if you wish to evoke a space-inspired vibe, use alternative terms such as "galactic," "stellar," "astral," or "space-inspired." Vary your vocabulary to maintain creativity and avoid repetitive terminology.
+10. CRITICAL: Integrate textual details from the website scraped content.
+11. **Content Overflow Handling:**
+- Ensure content is automatically scrollable if it overflows the viewport.
+- Add the following CSS rules to the body or container element:
+    - For vertical overflow: `overflow-y: auto;`
+    - For horizontal overflow: `overflow-x: hidden;` (to prevent horizontal scrolling)
+- For mobile responsiveness, ensure content remains accessible through scrolling when it exceeds screen dimensions.
+- Always give body the following style: height: max-content;
+12. **Image URLs:**: Do not use any external image URLs outside website content or fake paths. 
+13. Don't use rotate animations.
+14. When the operation is "update", examine the provided image_urls array and replace the previous Pexels image URLs with the new ones from the update request. Leave all other non-Pexels images intact. \
+For generation operations (start_over), simply include the provided images (if any) as part of the splash page.
+
+15. **Design Self‑Check**: Before finalizing, automatically ensure the page exhibits perfect visual harmony—consistent spacing, alignment, and hierarchy—renders flawlessly at all sizes, and contains zero layout or styling glitches - No exceptions
+
+    
+
+### **Incorporate Website Context**
+Use the provided website URL and scraped content to:
+- Reflect relevant branding, themes, or content from the website.
+- Integrate significant cues, or textual details from the scraped content.
+- Ensure that the splash page resonates with the website’s overall identity.
+
+
+---
+
+### **Example : Casual Theme (Cosmic)**
+#### **Prompt:**
+*"Create another mind-blowing HTML splash page with a completely unique cosmic theme. Use the following text: Headline - 'Launch Your Success Into Orbit 🌌!', Subheading - 'Unlock cosmic growth with tools designed to skyrocket your business! ✨', CTA - 'BLAST OFF NOW!'. Introduce a unique cosmic concept (e.g., black hole distortion, alien signal transmission) with at least three animated effects."*
+
+#### **Expected Output:**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch Your Success Into Orbit 🌌!</title>
+    <style>
+        /* General Reset */
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
+        body {{
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, rgba(25, 25, 112, 0.9), rgba(75, 0, 130, 0.9));
+            color: white;
+            min-height: 100vh; /* Changed from height: 100vh */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto; /* Added for vertical scrolling */
+            overflow-x: hidden; /* Added to prevent horizontal scrolling */
+            position: relative;
+            height: max-content;
+        }}
+
+        /* Cosmic Background Animation */
+        .cosmic-background {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(34, 193, 195, 1) 0%, rgba(253, 187, 45, 1) 100%);
+            animation: cosmicPulse 10s infinite ease-in-out;
+            z-index: -1;
+        }}
+
+        /* Warping Grid Animation */
+        .grid {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: warpGrid 8s infinite linear;
+            transform-origin: center;
+        }}
+
+        @keyframes warpGrid {{
+            0% {{
+                transform: rotate(0deg) scale(1);
+            }}
+            50% {{
+                transform: rotate(180deg) scale(1.5);
+            }}
+            100% {{
+                transform: rotate(360deg) scale(1);
+            }}
+        }}
+
+        /* Shimmering Tendrils Animation */
+        .tendril {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+            animation: shimmer 3s infinite ease-in-out;
+            z-index: -2;
+        }}
+
+        @keyframes shimmer {{
+            0% {{
+                transform: scale(1);
+                opacity: 0.6;
+            }}
+            50% {{
+                transform: scale(1.2);
+                opacity: 0.8;
+            }}
+            100% {{
+                transform: scale(1);
+                opacity: 0.6;
+            }}
+        }}
+
+        /* Fractal Burst Animation */
+        .fractals {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            background: transparent;
+            border-radius: 50%;
+            animation: fractalBurst 6s infinite cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: -1;
+        }}
+
+        @keyframes fractalBurst {{
+            0% {{
+                transform: scale(0.8);
+                opacity: 0.2;
+            }}
+            50% {{
+                transform: scale(1.5);
+                opacity: 0.8;
+            }}
+            100% {{
+                transform: scale(0.8);
+                opacity: 0.2;
+            }}
+        }}
+
+        /* Content Box */
+        .content {{
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+        }}
+
+        .headline {{
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+        }}
+
+        .subheading {{
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.9);
+        }}
+
+        /* Button */
+        .cta-button {{
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            color: white;
+            background: linear-gradient(135deg, rgba(34, 193, 195, 1), rgba(253, 187, 45, 1));
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+        }}
+
+        .cta-button:hover {{
+            background: linear-gradient(135deg, rgba(253, 187, 45, 1), rgba(34, 193, 195, 1));
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.9);
+        }}
+
+        /* Responsive Design */
+        @media (max-width: 768px) {{
+            .headline {{
+                font-size: 2.5rem;
+            }}
+
+            .subheading {{
+                font-size: 1.25rem;
+            }}
+
+            .cta-button {{
+                font-size: 1.25rem;
+            }}
+        }}
+
+    </style>
+</head>
+<body>
+
+    <!-- Cosmic Background -->
+    <div class="cosmic-background"></div>
+
+    <!-- Warping Grid -->
+    <div class="grid"></div>
+
+    <!-- Shimmering Tendrils -->
+    <div class="tendril"></div>
+
+    <!-- Fractal Burst -->
+    <div class="fractals"></div>
+
+    <!-- Content Box -->
+    <div class="content">
+        <div class="headline">Launch Your Success Into Orbit 🌌!</div>
+        <div class="subheading">Unlock cosmic growth with tools designed to skyrocket your business! ✨</div>
+        <button class="cta-button">BLAST OFF NOW!</button>
+    </div>
+
+</body>
+</html>```
+
+"""
+
+
 
 prompt = ChatPromptTemplate.from_messages([
         ("system", """
         You are an expert web developer specializing in creating **splash pages**.
-        Your task is to generate a **complete HTML file** with embedded CSS in a `<style>` tag. The code should be standalone, fully responsive, and visually appealing based on the user's input and style type.
+        Your task is to generate a **complete HTML file** with embedded CSS in a `<style>` tag. The code should be standalone, fully responsive, and visually appealing based on the guidelines given below, user's input and style type.
 
         In addition to the user's input, you are provided with website information which includes the website URL and content scraped from that page. Use this information to ensure that the splash page design and content are relevant to the website's context and branding.
 
@@ -435,513 +1529,3 @@ prompt = ChatPromptTemplate.from_messages([
 
 
 
-
-# # Email generation prompt
-# EMAIL_GENERATION_TEMPLATE = """
-# You are an expert email marketing specialist who creates compelling, conversion-focused email advertisements.
-
-# Your task is to generate a professional email advertisement based on the website information and user prompt provided below.
-
-# WEBSITE INFORMATION:
-# Company Name: {company_name}
-# Website URL: {website_url}
-# Website Title: {title}
-# Website Description: {description}
-# Main Headings: {headings}
-# Main Content: {main_text}
-# Contact Information: {contact_info}
-
-# USER PROMPT:
-# {user_prompt}
-
-# GUIDELINES:
-# 1. Create a compelling subject line that entices recipients to open the email
-# 2. Use a friendly, professional tone that matches the company's industry and branding
-# 3. Include a clear value proposition early in the email
-# 4. Add a strong call-to-action that directs recipients to the website
-# 5. Keep the email concise (250-400 words maximum)
-# 6. Structure the email with proper formatting:
-#    - Subject line
-#    - Greeting
-#    - Introduction paragraph
-#    - Main content (2-3 paragraphs with benefits)
-#    - Call to action
-#    - Closing
-#    - Company signature with contact information
-
-# FORMAT YOUR RESPONSE AS A COMPLETE EMAIL WITH THE FOLLOWING STRUCTURE:
-# FROM: [Company Name] <contact@{domain}>
-# SUBJECT: [Your engaging subject line]
-
-# [Email body with proper paragraphs and formatting]
-
-# [Company signature with contact info]
-
-# Do not include any explanations or notes outside the email format.
-# """
-
-# Email refinement prompt
-
-
-
-
-EMAIL_GENERATION_TEMPLATE = """
-    You are an expert email marketing specialist who creates compelling, conversion-focused email advertisements.
-
-    Your task is to generate a professional email advertisement based on the website content and user prompt provided below.
-
-    WEBSITE INFORMATION:
-    Website URL: {website_url}
-    Website Content: 
-    {website_content}
-
-    USER PROMPT:
-    {user_prompt}
-
-    GUIDELINES:
-    1. Create a compelling subject line that entices recipients to open the email
-    2. Use a friendly, professional tone that matches the company's industry and branding
-    3. Include a clear value proposition early in the email
-    4. Be highly creative with the email structure - don't follow a standard formula but ALWAYS GIVE A SUBJECT LINE IN THE BEGINNING
-    5. Use plenty of emojis throughout the email to make it eye-catching and engaging ✨🚀💯
-    6. Experiment with different formatting styles including bullet points, bold text, and varied paragraph lengths
-    7. Create a visually dynamic email that stands out in an inbox
-    8. Make the tone exciting and energetic - this is marketing that needs to grab attention immediately
-    9. Add a strong call-to-action that directs recipients to the website
-    10. Keep the email concise (250-400 words maximum)
-    11. DO NOT include any headers, footers, or salutations (no "Dear" or "Hello" openings)
-    12. Include provided website URL {website_url} as contact details in the end in the section of response [Contact info with website URL]
-    13. Use only the provided website URL {website_url} in the email as the primary link for all call-to-actions, not any links from the scraped content
-    14. ONLY GIVE RESPONSE IN MARKDOWN FORMAT. NEVER GIVE RESPONSE IN HTML FORMAT.
-    15. For the contact information at the end, simply write "Visit us:" followed by the website URL {website_url}. Do not include the text "[Contact info with website URL]" in your response.
-
-    FORMAT YOUR RESPONSE:
-    SUBJECT: [Your engaging subject line with emojis]
-
-    [Creative email body with varied formatting, multiple emojis, and eye-catching elements]
-
-    [Contact info with website URL]
-
-    Email 1:
-    Hello There,
-    We live in historic times worldwide. Make 2025 historic for you, as you have the power to do so!
-    This one has a special Promo Code - Gamma40
-    You need to sign up under me to get the max for that
-    https://superhotopp.com/lunerhive
-    A New program has opened that you'll love, called Super Hot Opp (ortunity)
-    The Admins are giving away their signups to members, into the 1000's of them
-    Make residual and lump sums in cash - up to 98 dollars a lump!
-    Even if the signup was sent to you by the admins...
-    Is that free money? YES Yes yes...
-    ► Get your programs out there with SOME STYLE
-    Also get 2 free hours of advertising when you join today
-    Also get 12 special effects on your ads - never seen before + 1 of a kind effects!
-    Super simple, just add in your ads.
-    Show your smart ad rotator and get even more time on your ads - EASY and CLEAR to do.
-    And if you want more???
-    The upgrades are only 3.99← Value packed and super low!
-    Get the Super Hot Opp Here
-
-    Email 2:
-    Hello My Fellow Marketer,
-    Have you ever wished for a Money Tree
-    where you could just shake it and money
-    would fall down?<contact@domain>
-    I found one and you can have one too!
-    This is the cheapest, simplest and fastest
-    way I have ever seen to get money. PERIOD.
-    Take a look at my Money Tree and Get Ya One!
-    - Richard Daigle
-
-    Email 3:
-    "USE OUR DONE 4 YOU"..."SUPER POWERFUL LANDING PAGES TO PROMOTE YOUR GREAT BUSINESS PLUS GET PAID"$$$..
-    Struggling To Stand Out?..Are Your Landing Pages Being Ignored?''
-    We Have The Low Cost Answer...
-    YES Use Our Super Powerful Landing Pages To Promote Your Great Programs!!!..
-    One Time Low Cost USE Them FOREVER.!!!...
-    JOIN NOW CLICK HERE... https://tinyurl.com/ytw3a6kb
-    PAY With PayPal 1707nashville@gmail.com
-    CashApp $robert476
-    Zelle (929)-531 2834
-    JOIN NOW START GETTING PAID SUPER FAST.$$$....
-    YES GET CASH-FLOW NOW.!!!..
-    ALL THE BEST...
-
-    Email 4:
-    herculist Do The Math! $900 A Day-Keep 100%-No Monthly Fees
-    Say goodbye to rush hour traffic, the 9-5 grind, trading time for money or not making enough money online! Our proven and easy to follow program makes earning $900/day, with zero monthly fees, more than possible. Free Blueprint- Click Here
-    This lifestyle changing opportunity supported by a 50k plus community of like-minded, work from home members, makes it easy to succeed from anywhere WIFI is available. https://www.make900dailyonlinefast.com/ready
-    WORLDWIDE CASH COWS
-
-    Email 5:
-    ★ (You Found it) - The One-Page Funnel 3.0
-    Easy Passive Income with DFY funnel
-    100% Done-For-You funnel – No setup needed!
-    Automated sales system – Closes sales for you.
-    Built-in follow-up – Promotes multiple offers on autopilot!
-    No auto-responder needed.
-    Every lead is hard coded to YOU for life.
-    Instant Traffic Solution – Just plug & play!
-    Click Below To Get Access To this amazing program.
-    Also, get Access to these Amazing Bonuses:
-    1. Facebook group to learn Social media strategies.
-    2. DM Scripts, MRR products and Free Premium E-books.
-    3. Free Traffic Rotator with up to 5000 clicks from Safelists.
-    https://itsylinx.com/NOTECHSKILLS
-    You get all this for $7.
-    To Your Success,
-    Richard Moore
-
-    Do not include any explanations or notes outside the email format.
-"""
-
-
-EMAIL_REFINEMENT_TEMPLATE = """
-You are an expert email marketing specialist who helps refine and improve email advertisements.
-
-Your task is to refine the existing email advertisement based on the user's feedback.
-
-ORIGINAL EMAIL:
-{previous_email}
-
-USER FEEDBACK FOR REFINEMENT:
-{user_prompt}
-
-
-GUIDELINES:
-1. Maintain the original structure of the email
-2. Make only the changes requested by the user
-3. Ensure the subject line remains compelling and includes emojis
-4. Keep the overall tone consistent with the brand while maintaining an exciting, energetic style
-5. Maintain a clear call-to-action that links to the provided website URL
-6. Ensure the email remains concise (250-400 words maximum)
-7. ONLY GIVE RESPONSE IN MARKDOWN FORMAT. NEVER GIVE RESPONSE IN HTML FORMAT.
-8. Preserve or enhance the creative formatting of the original email
-9. Maintain or add more emojis to keep the email eye-catching and engaging
-10. DO NOT add salutations (no "Dear" or "Hello" openings) if they weren't in the original
-
-
-
-FORMAT YOUR RESPONSE:
-SUBJECT: [Updated subject line if needed]
-
-[Refined email body]
-
-[Contact info with website URL]
-
-Do not include any explanations or notes outside the email format.
-"""
-
-
-
-
-
-
-
-
-##########################################################
-
-
-
-"""
-EXAMPLES OF GOOD STYLING & FORMAT:
-Here are three examples to guide you on structure only. DO NOT copy these exact designs or content. \
-Instead, be creative and develop unique styling that matches the company's branding and purpose. These are just to show potential layout approaches:
-
-Example 1:
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make 2025 Historic For You!</title>
-    <style>
-        body {{
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #F9F9F9;
-        }}
-        .container {{
-            background-color: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        }}
-        .header {{
-            text-align: center;
-            margin-bottom: 25px;
-            color: #E63946;
-        }}
-        .highlight {{
-            background-color: #FFEDCC;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 15px 0;
-            border-left: 4px solid #FFC107;
-        }}
-        .promo-code {{
-            font-size: 24px;
-            font-weight: bold;
-            color: #E63946;
-            text-align: center;
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #F8F9FA;
-            border-radius: 5px;
-            border: 2px dashed #E63946;
-        }}
-        .features {{
-            margin: 20px 0;
-        }}
-        .feature {{
-            margin-bottom: 10px;
-            padding-left: 25px;
-            position: relative;
-        }}
-        .feature:before {{
-            content: "►";
-            position: absolute;
-            left: 0;
-            color: #E63946;
-        }}
-        .cta {{
-            text-align: center;
-            margin: 30px 0 20px;
-        }}
-        .button {{
-            display: inline-block;
-            background-color: #E63946;
-            color: white;
-            padding: 12px 25px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 18px;
-            transition: background-color 0.3s;
-        }}
-        .button:hover {{
-            background-color: #D62B39;
-        }}
-        .emoji {{
-            font-size: 1.2em;
-        }}
-        .footer {{
-            margin-top: 30px;
-            font-size: 14px;
-            text-align: center;
-            color: #777;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Email content -->
-    </div>
-</body>
-</html>
-```
-
-Example 2:
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Hot Opportunity - Make 2025 Historic!</title>
-    <style>
-        body {{
-            font-family: 'Trebuchet MS', sans-serif;
-            line-height: 1.6;
-            color: #2E2E2E;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #F0F2F5;
-        }}
-        .container {{
-            background: linear-gradient(135deg, #6A11CB 0%, #2575FC 100%);
-            border-radius: 15px;
-            padding: 5px;
-        }}
-        .content {{
-            background-color: white;
-            border-radius: 12px;
-            padding: 30px;
-        }}
-        .header {{
-            text-align: center;
-            margin-bottom: 25px;
-        }}
-        .header h1 {{
-            color: #6A11CB;
-            margin-bottom: 10px;
-            font-size: 32px;
-        }}
-        .header h2 {{
-            color: #2575FC;
-            font-size: 24px;
-            font-weight: 500;
-            margin-top: 0;
-        }}
-        .promo-box {{
-            background: linear-gradient(45deg, #FF9A9E 0%, #FAD0C4 99%, #FAD0C4 100%);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 25px 0;
-            text-align: center;
-        }}
-        .promo-code {{
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            color: #6A11CB;
-            margin: 15px 0;
-            padding: 10px 15px;
-            background-color: white;
-            display: inline-block;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }}
-        .features-container {{
-            background-color: #F8F9FA;
-            border-radius: 10px;
-            padding: 20px 30px;
-            margin: 25px 0;
-        }}
-        .feature {{
-            position: relative;
-            padding: 8px 0 8px 35px;
-            margin: 10px 0;
-        }}
-        .feature:before {{
-            content: "✨";
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 20px;
-        }}
-        .emoji {{
-            font-size: 1.2em;
-            vertical-align: middle;
-        }}
-        .price {{
-            font-size: 24px;
-            font-weight: bold;
-            color: #2575FC;
-            margin: 20px 0;
-            text-align: center;
-        }}
-        .cta {{
-            text-align: center;
-            margin: 30px 0;
-        }}
-        .button {{
-            display: inline-block;
-            background: linear-gradient(to right, #6A11CB 0%, #2575FC 100%);
-            color: white;
-            padding: 15px 30px;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 18px;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
-        }}
-        .button:hover {{
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(37, 117, 252, 0.5);
-        }}
-        a {{
-            color: #2575FC;
-            text-decoration: none;
-            border-bottom: 1px dotted;
-        }}
-        .highlight {{
-            background: linear-gradient(120deg, rgba(255,194,102,0.2) 0%, rgba(255,194,102,0.2) 100%);
-            background-repeat: no-repeat;
-            background-size: 100% 40%;
-            background-position: 0 85%;
-            padding: 0 5px;
-        }}
-        .footer {{
-            text-align: center;
-            font-size: 14px;
-            color: #777;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="content">
-            <!-- Email content -->
-        </div>
-    </div>
-</body>
-</html>
-```
-"""
-
-
-
-
-
-
-
-
-
-
-
-# DO NOT copy exact styles, colors, or layout from the from the examples.
-
-# FORMAT YOUR HTML RESPONSE:
-# <!DOCTYPE html>
-# <html lang="en">
-# <head>
-#     <meta charset="UTF-8">
-#     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-#     <title>[Your Email Subject Line]</title>
-#     <style>
-#         /* Include your complete CSS styling here */
-#         body {{
-#             font-family: 'Arial', sans-serif;
-#             line-height: 1.6;
-#             color: #333;
-#             max-width: 600px;
-#             margin: 0 auto;
-#             padding: 20px;
-#             background-color: #F9F9F9;
-#         }}
-#         /* Add more styles as needed */
-#     </style>
-# </head>
-# <body>
-#     <div class="container">
-#         <!-- Your email content here -->
-#         <div class="header">
-#             <h1>[Your main headline]</h1>
-#         </div>
-        
-#         <!-- Main content -->
-        
-#         <!-- Call to action -->
-#         <div class="cta">
-#             <a href="{website_url}" class="button">Your CTA Text</a>
-#         </div>
-        
-#         <!-- Footer -->
-#         <div class="footer">
-#             <p>© 2025 [Company Name]. All rights reserved.</p>
-#         </div>
-#     </div>
-# </body>
-# </html>

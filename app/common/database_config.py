@@ -64,6 +64,7 @@ async def get_async_db():
 from app.models.splash_page import SplashPage
 from app.models.template import Template
 from app.models.model_config import ModelConfig
+from app.models.config_item import ConfigItem
 
 # Create tables synchronously
 Base.metadata.create_all(bind=ENGINE)

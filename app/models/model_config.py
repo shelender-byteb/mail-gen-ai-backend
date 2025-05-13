@@ -8,5 +8,6 @@ class ModelConfig(Base):
     model_type = Column(String, unique=True, nullable=False)
     model_name = Column(String, nullable=False)
     temperature = Column(Float, nullable=False)
+    provider = Column(String, nullable=False, server_default="openai")
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

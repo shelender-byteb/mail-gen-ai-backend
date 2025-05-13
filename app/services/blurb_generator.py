@@ -12,7 +12,7 @@ from app.utils.website_scraper import scrape_website
 from app.common.env_config import get_envs_setting
 from app.schemas.request.blurb_requests import Operation
 
-from app.utils.database_utils import load_model_config, load_system_template
+from app.utils.database_utils import load_model_config, load_system_template, get_llm
 
 from app.schemas.request.model_update import ModelType
 from app.schemas.request.template_update import TemplateType
@@ -27,26 +27,60 @@ llm = ChatOpenAI(
 import random, secrets
 
 # --- 1. random palettes, fonts, etc. ---------------------------
+
 GRADIENTS = [
     ("135deg", "#4B0082", "#00FFFF"),
     ("45deg",  "#1a0033", "#FFD700"),
-    ("270deg", "#800080", "#FFFFFF"),
     ("180deg", "#32004b", "#FF00FF"),
-    ("120deg", "#2e004f", "#008080")
+    ("120deg", "#2e004f", "#008080"),
+    ("45deg",  "#ff512f", "#dd2476"),
+    ("120deg", "#00c6ff", "#0072ff"),
+    ("180deg", "#834d9b", "#d04ed6"),
+    ("300deg", "#ee0979", "#ff6a00"),
+    ("240deg", "#00d2ff", "#928dab"),
+    ("30deg",  "#3a1c71", "#d76d77"),
+    ("150deg", "#0099F7", "#F11712")
 ]
 
-HEADLINE_FONTS  = ["Arial,Helvetica,sans-serif",
-                   "Impact,Charcoal,sans-serif",
-                   "Georgia,serif"]
+# 🔠 HEADLINE FONTS — removed extra‑bulky/all‑caps sets
+HEADLINE_FONTS = [
+    "Georgia,serif",
+    "Gill Sans,Gill Sans MT,Calibri,sans-serif",
+    "Lucida Sans,Liberation Sans,Verdana,sans-serif",
+    "Tahoma,Geneva,sans-serif",
+    "Trebuchet MS,Helvetica,sans-serif"
+]
 
-SUB_FONTS       = ["Verdana,Geneva,sans-serif",
-                   "Trebuchet MS,Helvetica,sans-serif",
-                   "Courier New,Courier,monospace"]
+# 🔠 SUB FONTS — kept all; none are oversize for 1.2‑1.4 rem.
+SUB_FONTS = [
+    "Verdana,Geneva,sans-serif",
+    "Trebuchet MS,Helvetica,sans-serif",
+    "Courier New,Courier,monospace",
+    "Georgia,serif",
+    "Roboto,Arial,Helvetica,sans-serif",
+    "Helvetica,Arial,sans-serif",
+    "Calibri,Candara,Segoe UI,Optima,sans-serif",
+    "Lucida Sans Unicode,Lucida Grande,sans-serif",
+    "Gill Sans,Gill Sans MT,sans-serif",
+    "Times New Roman,Times,serif"
+]
 
-ANIM_PRESETS = ["bounceIn", "scaleUp", "rotatePop", "fadeSlide"]
+ANIM_PRESETS = [
+    "bounceIn",
+    "scaleUp",
+    "rotatePop",
+    "fadeSlide",
+    "flipIn",
+    "slideUp",
+    "zoomRotate",
+    "pulseGlow",
+    "swingDrop",
+    "elasticPop"
+]
 
 
 # Text Emphasis: Underline 'cosmic growth' with CSS (text-decoration), matching the underline color to a key accent in the design. Use larger font sizes (e.g., headline: 1.8rem–2.5rem, subheading: 1rem–1.5rem) to dominate the space, with 'cosmic growth' optionally enlarged further.
+
 
 POWERBLURB_GENERATION_TEMPLATE = """
 Create a HTML code for a visually stunning powerblurb ad that fits precisely within a 257.328-pixel wide by 450.961-pixel high panel, featuring a bold headline and an engaging subheading, optimized for visual impact.
@@ -86,29 +120,6 @@ Randomly choose (independently each run):
 • 0–3 decorative “cosmic-element” <div>s (each positioned abs.; size 100-200 px; low opacity)
 • Animation presets (e.g. bounce, scale, fade, rotate) realised via JS.
 
-— WEBSITE CONTEXT —
-Incorporate key words, tone, or imagery hints derived from:
-  WEBSITE URL: {website_url}
-  SCRAPED CONTENT: {website_content}
-
-— DESIGN SEED (use exactly, do NOT invent) —
-GRADIENT: {gradient}
-HEADLINE_FONT: {headline_font}
-SUB_FONT: {sub_font}
-ANIMATION_PRESET: {anim}
-BORDER_RADIUS: {border_radius}px
-BORDER_PX: {border_px}px
-BORDER_STYLE: {border_style}
-SHADOW: {shadow_strength}px
-SEED_ID: {seed_id}
-
-— USER INSTRUCTIONS —
-{user_prompt}
-
-— OUTPUT FORMAT —
-Return **only** the root <div> with its children and the inline <script>. No explanations, no comments outside the code.
-
-
 
 CRITICAL: The generated HTML must strictly use a body width of 257.328px and a height of 450.961px—no adjustments or responsive changes are allowed.
 CRITICAL: **Incorporate Website Context**
@@ -118,6 +129,27 @@ CRITICAL: **Incorporate Website Context**
     - Ensure that the splash page resonates with the website’s overall identity.
 
 
+–– PLACEHOLDER VALUES (supplied in each query at runtime by user) ––
+{user_prompt}        – the user’s creative brief  
+{website_url}        – source URL for brand context  
+{website_content}    – text scraped from that URL
+
+–– DESIGN SEED (Supplied in each query at runtime by user. Use exactly as given, do not invent) ––
+GRADIENT:         {gradient}
+HEADLINE_FONT:    {headline_font}
+SUB_FONT:         {sub_font}
+ANIMATION_PRESET: {anim}
+BORDER_RADIUS:    {border_radius}px
+BORDER_PX:        {border_px}px
+BORDER_STYLE:     {border_style}
+SHADOW:           {shadow_strength}px
+SEED_ID:          {seed_id}
+
+— OUTPUT FORMAT —
+Return **only** the root <div> with its children and the inline <script>. No explanations, no comments outside the code.
+
+
+--- **Appeal & Variety Self-Check**: Before returning HTML, auto-verify that a fresh color palette (extracted from website content or a new complementary trio) is applied and at least two creative elements—gradient angle, border treatment, font pairing, or emoji/icon accents—differ from defaults, guaranteeing each banner looks new and striking; re-generate until this test passes.
 
 EXAMPLE SPLASH PAGE AD:
 <div id="blurb" style="width:257.328px;height:450.961px;padding:25px;box-sizing:border-box;background:linear-gradient(135deg,#FF00FF 0%,#008080 100%);border:2px solid #FFFFFF;border-radius:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;overflow:hidden;">
@@ -160,22 +192,12 @@ EXAMPLE SPLASH PAGE AD:
     }})();
   </script>
 </div>
-
-
 """
-
-
 
 POWERBLURB_REFINEMENT_TEMPLATE = """
 You are an elite digital designer who **refines** PowerBlurbs.  
 Your job: adjust the existing snippet exactly to the user’s feedback while keeping all
 inline-only constraints.
-
-ORIGINAL BLURB (edit this, do not discard):
-{previous_blurb}
-
-USER FEEDBACK:
-```{user_prompt}```
 
 ✦✦ INLINE-ONLY SPEC (MUST follow) ✦✦
 • The finished code must be **one self-contained** `<div id="blurb"> … </div>` snippet.  
@@ -196,6 +218,12 @@ When refining:
 
 Return **only** the updated `<div id="blurb"> … </div>` with its children and inline `<script>`.  
 NO explanations or extra text.
+
+You will be given the following details in each query:
+- **Original Blurb HTML to edit:** {previous_blurb}
+- **User Feedback / change requests:** {user_prompt}
+
+
 """
 
 
@@ -218,14 +246,15 @@ async def generate_power_blurb(
             # refinement_prompt = ChatPromptTemplate.from_template(POWERBLURB_REFINEMENT_TEMPLATE)
             # chain = refinement_prompt | llm
             cfg = await load_model_config(ModelType.BLURB, session)
-            if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
-                dyn_llm = ChatOpenAI(model_name=cfg.model_name)
-            else:
-                dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+            # if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
+            #     dyn_llm = ChatOpenAI(model_name=cfg.model_name)
+            # else:
+            #     dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+            dyn_llm = get_llm(cfg.provider, cfg.model_name, cfg.temperature)
 
             BLURB_REFINEMENT_DB_SYSTEM_TEMPLATE = await load_system_template(TemplateType.BLURB_REFINEMENT, session)
             BLURB_REFINEMENT_HUMAN = """
-            ORIGINAL BLURB:
+            ORIGINAL BLURB (edit this, do not discard):
             {previous_blurb}
 
             USER FEEDBACK:
@@ -260,10 +289,11 @@ async def generate_power_blurb(
             )
         
         cfg = await load_model_config(ModelType.BLURB, session)
-        if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
-            dyn_llm = ChatOpenAI(model_name=cfg.model_name)
-        else:
-            dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+        # if cfg.model_name == "o4-mini" or cfg.model_name == "o3-mini":
+        #     dyn_llm = ChatOpenAI(model_name=cfg.model_name)
+        # else:
+        #     dyn_llm = ChatOpenAI(model_name=cfg.model_name, temperature=cfg.temperature)
+        dyn_llm = get_llm(cfg.provider, cfg.model_name, cfg.temperature)
 
         BLURB_GENERATION_DB_SYSTEM_TEMPLATE = await load_system_template(TemplateType.BLURB_GENERATION, session)
         BLURB_GENERATION_HUMAN_TEMPLATE = """
@@ -290,7 +320,56 @@ async def generate_power_blurb(
         ])
         # generation_prompt = ChatPromptTemplate.from_template(BLURB_GENERATION_DB_TEMPLATE)
 
-        chain = generation_prompt | dyn_llm
+        QA_FIX_PROMPT = ChatPromptTemplate.from_messages([
+            (
+            "system",
+            """
+            You are **Blurb‑QA‑Repair v3**, an elite verifier/fixer for 257.328 × 450.961 inline‑only ads.
+            You receive exactly one HTML snippet: <div id="blurb"> … <script> … </div>.
+
+            ▼ TASK
+            1. Parse the snippet.
+            2. Audit the DESIGN‑ONLY rules below.
+            3. If *all* pass → return the snippet unchanged.
+            4. Else → return a single, fully‑corrected snippet that satisfies **all** rules.
+            • Fix only what is broken; keep valid styling / content.
+            • Aim for perfect visual appeal (balanced spacing, clear hierarchy, no overflow).
+            • Output pure HTML only—no comments or explanations.
+
+            ▼ DESIGN RULES
+            SIZE
+            • Root div width = 257.328 px, height = 450.961 px (exact).
+
+            LAYOUT
+            • display:flex; flex‑direction:column; justify‑content:center;
+                align‑items:center; position:relative; overflow:hidden (no scrollbars).
+
+            LAYOUT SAFETY
+            • Headline font‑size ≤ 2 rem; subheading ≤ 1.3 rem  
+            • line‑height: headline 1.10–1.20, sub 1.35–1.45  
+            • Spacing between headline & sub: 18 ± 4 px margin‑top  
+            • Headline max‑width 90 %; sub max‑width 95 %  
+            • No <br> in headline—remove if present  
+            • Padding ≥ 24 px on all sides; text must not touch borders
+
+            TEXT FIT
+            • If content overflows the 450.961 px height:  
+                ↳ first shrink headline (≥ 1.8 rem) → sub (≥ 1.0 rem)  
+                ↳ then tighten their margins  
+                ↳ finally strip any remaining <br> breaks
+
+            VISUAL HIERARCHY
+            • Headline visually dominant; subheading subordinate; overall spacing balanced
+
+            ━━ OUTPUT ━━
+            Return **only** the final <div id="blurb">…</div> (with inline <script>). No extra text.
+            """
+            ),
+            ("human", "{html}")
+        ])
+
+
+        chain = generation_prompt | dyn_llm | QA_FIX_PROMPT | dyn_llm
 
         gradient_dir, grad1, grad2 = random.choice(GRADIENTS)
         headline_font   = random.choice(HEADLINE_FONTS)

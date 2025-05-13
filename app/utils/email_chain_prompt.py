@@ -8,17 +8,12 @@ email_generation_prompt = ChatPromptTemplate.from_messages([
         You are an expert email marketing specialist who creates visually appealing, engaging, and conversion-focused email advertisements.
         Your task is to generate a high-quality HTML email advertisement based on the website content and user prompt provided below.
 
-        WEBSITE INFORMATION:
-        Website URL: {website_url}
-        Website Content: 
-        {website_content}
-
-        USER PROMPT:
-        {user_prompt}
-
-        IMAGE URLS PROVIDED BY USER (if provided, embed each image using the <img> tag with inline CSS styling exactly as provided; do not use any images from the website content or any other source. Only the URLs listed in the {image_urls} field are permitted):
-        {image_urls}
-
+        You will be given the following details in each query:
+        - **Website URL:** {website_url}
+        - **Scraped Content from Website:** {website_content}
+        - **User Description:** {user_prompt}
+        - **IMAGE URLS PROVIDED BY USER:** {image_urls}  
+        *(if provided, embed each image using the <img> tag with inline CSS styling exactly as provided; do not use any images from the website content or any other source. Only the URLs listed in the {image_urls} field are permitted)*
 
         GUIDELINES:
         1. Create a compelling subject line that entices recipients to open the email

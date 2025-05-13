@@ -19,7 +19,7 @@ def get_all_models(session: Session = Depends(get_db)):
     """
     models = session.query(ModelConfig).all()
     return {
-        model.model_type: {"model_name": model.model_name, "temperature": model.temperature}
+        model.model_type: {"model_name": model.model_name, "temperature": model.temperature, "provider": model.provider,}
         for model in models
     }
 
@@ -28,18 +28,18 @@ def get_model(model_type: ModelType, session: Session = Depends(get_db)):
     """
     Retrieve a specific model configuration by its type.
     """
-    if model_type not in ALLOWED_MODEL_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid model type"
-        )
+    # if model_type not in ALLOWED_MODEL_TYPES:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail="Invalid model type"
+    #     )
     model_config = session.query(ModelConfig).filter(ModelConfig.model_type == model_type).first()
     if not model_config:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Model configuration not found"
         )
-    return {model_type: {"model_name": model_config.model_name, "temperature": model_config.temperature}}
+    return {model_type: {"model_name": model_config.model_name, "temperature": model_config.temperature, "provider": model_config.provider,}}
 
 @router.put("/{model_type}", status_code=status.HTTP_200_OK)
 def upsert_model(
@@ -62,16 +62,24 @@ def upsert_model(
         model_config = ModelConfig(
             model_type=model_type,
             model_name=data.model_name,
-            temperature=data.temperature
+            temperature=data.temperature,
+            provider= data.provider.value
         )
         session.add(model_config)
     else:
         # Update existing record
         model_config.model_name = data.model_name
         model_config.temperature = data.temperature
+        model_config.provider = data.provider.value
     session.commit()
     session.refresh(model_config)
-    return {model_type: {"model_name": model_config.model_name, "temperature": model_config.temperature}}
+    return {
+        model_type: {
+        "model_name": model_config.model_name, 
+        "temperature": model_config.temperature,
+        "provider": model_config.provider,
+        }
+    }
 
 
 

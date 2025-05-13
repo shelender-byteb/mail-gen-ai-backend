@@ -21,6 +21,8 @@ class Settings(BaseSettings):
 
     EMBEDDINGS_MODEL_NAME: str
     OPENAI_API_KEY: str
+    DEEPSEEK_API_KEY: str
+    ANTHROPIC_API_KEY: str
 
     # Pinecone settings
     PINECONE_API_KEY: str

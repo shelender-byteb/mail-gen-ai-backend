@@ -1,10 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 
-
-
-banner_generation_prompt = ChatPromptTemplate.from_messages([
-        ("system", """
+BAMMER_GENERATION_PROMPT = """
         You are an expert digital designer who creates eye-catching, high-converting promotional banners.
         Your task is to generate a stunning HTML banner advertisement based on the website content and user prompt provided below.
         
@@ -45,6 +42,7 @@ banner_generation_prompt = ChatPromptTemplate.from_messages([
         17. The banner's height should be EXACTLY as specified in the user input (look for height specifications in the user prompt)
         18. Use 'overflow: hidden' on both body and container elements to prevent any content from spilling outside the banner dimensions
         19. Position the banner container relative to itself, not absolute or fixed positioning, to ensure it doesn't interact with elements outside itself
+        20. **Appeal & Variety Self-Check**: Before returning HTML, auto-verify that a fresh color palette (extracted from website content or a new complementary trio) is applied and at least two creative elements—gradient angle, border treatment, font pairing, or emoji/icon accents—differ from defaults, guaranteeing each banner looks new and striking; re-generate until this test passes.
 
 
         EXAMPLE BANNER FORMAT:
@@ -149,85 +147,5 @@ banner_generation_prompt = ChatPromptTemplate.from_messages([
             </div>
         </body>
         </html>
-    
-        """),
-       ("human", """
-        User Query:
-        {user_prompt}
-
-        Website URL: {website_url}
-        Scraped Content: {website_content}
-        Target Dimensions:
-        Height: {height}
-        Width: {width}
-
-        """)
-        
-        ])
-
-
-
-
-#######################################################################
-
-
-
-model_banner_generation_prompt = ChatPromptTemplate.from_messages([
-        ("system", """
-        You are tasked with creating a stunning HTML banner advertisement based on the provided website content and user prompt. Utilize the details given in each query to design a visually striking, high-converting promotional banner.
-        **Input Details:**
-        - **Website URL:** {website_url}
-        - **Scraped Content from Website:** {website_content}
-        - **Height Specification:** {height}
-        - **Width Specification:** {width}
-        - **User Description:** A brief description of the banner requirements
-
-        ## Guidelines:
-        1. **Visual Appeal:** Design an eye-catching banner that immediately captivates the audience's attention.
-        2. **Format Specifications:** Create the banner in a box/rectangular format with exact width and height as specified.
-        3. **Compelling Headline:** Incorporate a bold headline that effectively communicates value.
-        4. **Key Value Propositions:** Feature 3-5 succinct benefits or value propositions.
-        5. **Color Scheme:** Use colors that naturally draw the eye.
-        6. **Visual Enhancements:** Enhance appeal with emojis or icons strategically.
-        7. **CTA Button:** Include a strong call-to-action button linked to the website URL using `target="_blank"`.
-        8. **Focus on Benefits:** Keep text concise and strictly benefits-focused.
-        9. **Link Constraints:** All links should be strictly from the provided website URL.
-        10. **HTML Specifications:** Deliver fully structured HTML with CSS, **with background set to transparent** for body and html elements.
-        11. **Exclusion of Unnecessary Parts:** Do not include footers, copyright, or addresses.
-        12. **Design Elements for Appeal:** Consider using creative background effects, gradients, styled borders, and text effects.
-        13. **Banner Structure:** Ensure the banner has these components:
-        - Top: Attention-grabbing headline
-        - Middle: Value-explaining punch line 
-        - Bottom: Clear Call to Action
-        14. **Content Encapsulation:** Keep all animations and effects strictly within banner dimensions.
-        15. **Height and Positioning:** Height must match specifications with 'overflow: hidden', and banner container should be positioned relative and not interacting with external elements.
-
-        ## Output Format
-        Provide the completed HTML and CSS code for the banner, structured as specified, ensuring all guidelines are met. Avoid code blocks unless otherwise specified.
-
-        ## Example
-        (Note: Examples should be detailed and fit within specified dimensions, tailored to the user's description and the scraped content.)
-
-        ### Example 1: 
-        - **User Description:** Promotion for advanced analytics tool
-        - **Output:**
-        [BANNER HTML with placeholders for custom values, ensuring guidelines are followed and the structure is visually compelling.]
-
-        ## Notes
-        - Ensure every design element is confined within the container's defined dimensions.
-        - Focus on clear communication of benefits without unnecessary complexity.
-        - Maintain high visual standards and responsiveness within the media specifications.
-        """),
-       ("human", """
-        User Query:
-        {user_prompt}
-
-        Website URL: {website_url}
-        Scraped Content: {website_content}
-        Target Dimensions:
-        Height: {height}
-        Width: {width}
-
-        """)
-        
-        ])
+         
+        """
